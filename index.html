@@ -263,6 +263,22 @@ canvas.chart{width:100%;height:100%;display:block}
 .drive-actions{display:flex;flex-wrap:wrap;gap:8px}
 .drive-actions .btn{flex:1;min-width:120px}
 
+/* ---- Books ---- */
+.book-year{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px}
+.book-card{display:flex;align-items:flex-start;gap:10px}
+.book-card .b-title{font-weight:700;font-size:15px;flex:1}
+.book-card .b-meta{font-size:12.5px;color:var(--muted)}
+.rating{display:flex;align-items:center;gap:1px;margin-top:5px}
+.rating i{width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;color:var(--accent)}
+.rating i.off{opacity:.25}
+.rating i svg{width:13px;height:13px}
+.book-summary{font-size:13px;color:var(--muted);line-height:1.5;margin-top:6px;white-space:pre-wrap}
+.stars{display:flex;gap:2px;font-size:26px;line-height:1}
+.star{cursor:pointer;color:var(--border);user-select:none;transition:transform .05s}
+.star.on{color:var(--accent)}
+.star:active{transform:scale(.85)}
+.badge.book{background:var(--accent-soft);color:var(--accent)}
+
 /* ---- Settings ---- */
 .seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .seg button{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
@@ -276,7 +292,7 @@ canvas.chart{width:100%;height:100%;display:block}
 .toggle input:checked + .track:before{transform:translateX(20px)}
 
 /* ---- Nav ---- */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(7,1fr);padding-bottom:env(safe-area-inset-bottom)}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom)}
 .nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 0 8px;border:none;background:none;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
 .nav button svg{width:22px;height:22px}
 .nav button.active{color:var(--accent)}
@@ -312,6 +328,7 @@ canvas.chart{width:100%;height:100%;display:block}
       <button data-view="workouts"><i></i>Workouts</button>
       <button data-view="timers"><i></i>Timers</button>
       <button data-view="stats"><i></i>Stats</button>
+      <button data-view="books"><i></i>Books</button>
       <button data-view="calendar"><i></i>Calendar</button>
       <button data-view="settings"><i></i>Settings</button>
     </nav>
@@ -459,6 +476,7 @@ const ICONS = {
   workouts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/></svg>',
   timers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M9 2h6"/></svg>',
   stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+  books: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
   calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9.5h18"/></svg>',
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>'
 };
@@ -467,6 +485,7 @@ const iEdit = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const iTrash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
 const iMoon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 const iSun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const iStar = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.26 6.6.6-5 4.4 1.5 6.5L12 16.6 5.9 19.8l1.5-6.5-5-4.4 6.6-.6z"/></svg>';
 
 /* ---------------- State & persistence ---------------- */
 const KEY = "alltimer_data_v1";
@@ -477,7 +496,7 @@ function defaultData() {
   const mkTimer = (name, repeat, phases) => ({ id: uid(), name, repeat, phases });
   const mkEx = (name, duration, rest) => ({ id: uid(), name, duration, rest });
   return {
-    version: 3,
+    version: 4,
     habits: [
       mkHabit("Drink water", "#3b82f6"),
       mkHabit("Read 20 min", "#8b5cf6")
@@ -499,6 +518,8 @@ function defaultData() {
     notes: {},
     xp: 0,
     achievements: {},
+    books: [],
+    wishlist: [],
     settings: { theme: "auto", sound: true, notify: false }
   };
 }
@@ -507,6 +528,8 @@ function migrate() {
   if (!state.notes) state.notes = {};
   if (state.xp == null) state.xp = 0;
   if (!state.achievements) state.achievements = {};
+  if (!Array.isArray(state.books)) state.books = [];
+  if (!Array.isArray(state.wishlist)) state.wishlist = [];
   (state.workouts || []).forEach(w => {
     if (!w.mode) w.mode = "interval";
     if (w.cap == null) w.cap = 600;
@@ -545,6 +568,8 @@ function load() {
       if (!state.notes) state.notes = {};
       if (state.xp == null) state.xp = 0;
       if (!state.achievements) state.achievements = {};
+      if (!Array.isArray(state.books)) state.books = [];
+      if (!Array.isArray(state.wishlist)) state.wishlist = [];
     }
   } catch (e) { console.warn("load failed", e); }
   migrate();
@@ -599,7 +624,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal()
 /* ---------------- Gamification (XP, levels, achievements) ---------------- */
 const LEVEL_NAMES = ["Beginner", "Explorer", "Regular", "Disciplined", "Athlete", "Warrior", "Master", "Legend"];
 const XP_PER_LEVEL = 100;
-const XP_HABIT = 10, XP_SUB = 2, XP_WORKOUT = 25, XP_TIMER = 10, XP_NOTE = 5;
+const XP_HABIT = 10, XP_SUB = 2, XP_WORKOUT = 25, XP_TIMER = 10, XP_NOTE = 5, XP_BOOK = 15;
 const ACHIEVEMENTS = [
   { id: "first", icon: "🌱", name: "First steps", desc: "Complete your first habit", earned: s => s.done >= 1 },
   { id: "week", icon: "🔥", name: "On a roll", desc: "Reach a 7-day habit streak", earned: s => s.bestStreak >= 7 },
@@ -610,7 +635,10 @@ const ACHIEVEMENTS = [
   { id: "grinder", icon: "🏋️", name: "Grinder", desc: "Complete 50 workouts", earned: s => s.workouts >= 50 },
   { id: "zen", icon: "🧘", name: "Zen master", desc: "Complete 25 wellness timers", earned: s => s.timers >= 25 },
   { id: "early", icon: "🌅", name: "Early bird", desc: "Complete a habit before 9 AM", earned: s => s.earlyBird },
-  { id: "scribe", icon: "✍️", name: "Scribe", desc: "Write a daily note", earned: s => s.notes >= 1 }
+  { id: "scribe", icon: "✍️", name: "Scribe", desc: "Write a daily note", earned: s => s.notes >= 1 },
+  { id: "book1", icon: "📖", name: "Bookworm", desc: "Read your first book", earned: s => s.books >= 1 },
+  { id: "book10", icon: "📚", name: "Librarian", desc: "Read 10 books", earned: s => s.books >= 10 },
+  { id: "book25", icon: "🎓", name: "Scholar", desc: "Read 25 books", earned: s => s.books >= 25 }
 ];
 function levelOf(xp) {
   const level = Math.floor((xp || 0) / XP_PER_LEVEL) + 1;
@@ -632,7 +660,7 @@ function xpStats() {
   });
   let bestStreak = 0;
   state.habits.forEach(h => { bestStreak = Math.max(bestStreak, bestStreakOf(h)); });
-  return { done, bestStreak, perfectDay, workouts: (state.sessions || []).length, timers: (state.timerLogs || []).length, notes: Object.keys(state.notes || {}).filter(k => state.notes[k]).length, earlyBird };
+  return { done, bestStreak, perfectDay, workouts: (state.sessions || []).length, timers: (state.timerLogs || []).length, notes: Object.keys(state.notes || {}).filter(k => state.notes[k]).length, earlyBird, books: (state.books || []).length };
 }
 function checkAchievements() {
   const s = xpStats(), fresh = [];
@@ -909,7 +937,8 @@ function renderStats() {
     '<div class="xp-meta">' + state.xp + ' XP total · ' + lv.into + '/' + XP_PER_LEVEL + ' to next level</div></div></div>';
   html += '<div class="card stats"><div class="stat"><b>' + xs.done + '</b><span>habits done</span></div>' +
     '<div class="stat"><b>' + xs.workouts + '</b><span>workouts</span></div>' +
-    '<div class="stat"><b>' + xs.timers + '</b><span>timers</span></div></div>';
+    '<div class="stat"><b>' + xs.timers + '</b><span>timers</span></div>' +
+    '<div class="stat"><b>' + xs.books + '</b><span>books</span></div></div>';
   const wk = weeklyData(), dd = dailyData(), wd = weekdayData();
   html += '<div class="card"><h3>Habit completion · last 8 weeks</h3><div class="chart-box"><canvas class="chart" id="chWeekly"></canvas></div></div>';
   html += '<div class="card"><h3>Habits done per day · last 30 days</h3><div class="chart-box"><canvas class="chart" id="chDaily"></canvas></div></div>';
@@ -933,6 +962,106 @@ function renderStats() {
   drawBarChart($("#chWeekly"), wk.labels, wk.values, { color: accent, muted, border, max: 100 });
   drawLineChart($("#chDaily"), dd, { color: accent, muted, border });
   drawBarChart($("#chWeekday"), wd.labels, wd.values, { color: accent, muted, border });
+}
+
+/* ---------------- Books ---------------- */
+const starsHTML = r => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => '<i class="' + (i < (r || 0) ? "" : "off") + '">' + iStar + "</i>").join("");
+const yearOf = ds => { const n = parseInt(String(ds || "").slice(0, 4), 10); return isNaN(n) ? new Date().getFullYear() : n; };
+
+function addBook() { bookModal(); }
+function editBook(id) { bookModal(id); }
+function delBook(id) { if (confirm("Delete this book entry?")) { state.books = state.books.filter(b => b.id !== id); save(); renderAll(); } }
+function addToWish() { wishlistModal(); }
+function editWish(id) { wishlistModal(id); }
+function delWish(id) { if (confirm("Remove from your reading list?")) { state.wishlist = state.wishlist.filter(w => w.id !== id); save(); renderAll(); } }
+function markAsRead(wid) { const w = state.wishlist.find(x => x.id === wid); if (w) bookModal(null, { title: w.title, author: w.author || "", _wish: wid }); }
+
+function bookModal(id, prefill) {
+  const b = id ? state.books.find(x => x.id === id) : (prefill || { title: "", author: "", date: todayISO, rating: 0, summary: "" });
+  const stars = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => '<span class="star' + (n <= (b.rating || 0) ? " on" : "") + '" data-r="' + n + '">★</span>').join("");
+  openModal(
+    "<h3>" + (id ? "Edit book" : (prefill ? "Mark as read" : "Add a read book")) + "</h3>" +
+    '<label class="field"><span>Title</span><input class="input" id="bTitle" value="' + esc(b.title) + '" placeholder="e.g. The Alchemist"></label>' +
+    '<label class="field"><span>Author</span><input class="input" id="bAuthor" value="' + esc(b.author) + '" placeholder="Optional"></label>' +
+    '<label class="field"><span>Date finished</span><input class="input" id="bDate" type="date" value="' + esc(b.date || todayISO) + '"></label>' +
+    '<div class="field"><span>Rating /10</span><div class="stars" id="bStars">' + stars + "</div></div>" +
+    '<label class="field"><span>Quick summary</span><textarea class="input" id="bSummary" rows="3" placeholder="What did you think?">' + esc(b.summary || "") + '</textarea></label>' +
+    '<div class="modal-actions"><button class="btn" id="saveBook">Save</button><button class="btn ghost" id="cancelBook">Cancel</button></div>',
+    ov => {
+      ov.querySelectorAll(".star").forEach(s => s.onclick = () => {
+        const r = +s.dataset.r;
+        ov.querySelectorAll(".star").forEach(x => x.classList.toggle("on", +x.dataset.r <= r));
+      });
+      ov.querySelector("#cancelBook").onclick = closeModal;
+      ov.querySelector("#saveBook").onclick = () => {
+        const title = ov.querySelector("#bTitle").value.trim();
+        if (!title) { ov.querySelector("#bTitle").focus(); return; }
+        const author = ov.querySelector("#bAuthor").value.trim();
+        const date = ov.querySelector("#bDate").value || todayISO;
+        const rating = ov.querySelectorAll(".star.on").length;
+        const summary = ov.querySelector("#bSummary").value.trim();
+        if (id) { const bb = state.books.find(x => x.id === id); Object.assign(bb, { title, author, date, rating, summary }); }
+        else {
+          state.books.push({ id: uid(), title, author, date, rating, summary, created: todayISO });
+          addXp(XP_BOOK);
+          if (prefill && prefill._wish) state.wishlist = state.wishlist.filter(w => w.id !== prefill._wish);
+        }
+        save(); closeModal(); renderAll();
+      };
+    }
+  );
+}
+function wishlistModal(id) {
+  const w = id ? state.wishlist.find(x => x.id === id) : { title: "", author: "" };
+  openModal(
+    "<h3>" + (id ? "Edit book" : "Add to reading list") + "</h3>" +
+    '<label class="field"><span>Title</span><input class="input" id="wTitle" value="' + esc(w.title) + '" placeholder="e.g. Sapiens"></label>' +
+    '<label class="field"><span>Author</span><input class="input" id="wAuthor" value="' + esc(w.author) + '" placeholder="Optional"></label>' +
+    '<div class="modal-actions"><button class="btn" id="saveWish">Save</button><button class="btn ghost" id="cancelWish">Cancel</button></div>',
+    ov => {
+      ov.querySelector("#cancelWish").onclick = closeModal;
+      ov.querySelector("#saveWish").onclick = () => {
+        const title = ov.querySelector("#wTitle").value.trim();
+        if (!title) { ov.querySelector("#wTitle").focus(); return; }
+        const author = ov.querySelector("#wAuthor").value.trim();
+        if (id) { const ww = state.wishlist.find(x => x.id === id); Object.assign(ww, { title, author }); }
+        else state.wishlist.push({ id: uid(), title, author, created: todayISO });
+        save(); closeModal(); renderAll();
+      };
+    }
+  );
+}
+function renderBooks() {
+  const c = $("#content");
+  let html = '<div class="page-head"><h2>Books</h2><button class="btn ghost sm" onclick="addToWish()">+ To read</button><button class="btn sm" onclick="addBook()">+ Add read</button></div>';
+  html += '<h3 style="font-size:15px;margin:4px 0 8px">To read</h3>';
+  if (!state.wishlist.length) html += '<div class="muted" style="margin-bottom:8px">Nothing on your list yet.</div>';
+  state.wishlist.forEach(w => {
+    html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+      '<span style="flex:1;min-width:120px"><b>' + esc(w.title) + '</b>' + (w.author ? ' <span class="muted">— ' + esc(w.author) + "</span>" : "") + "</span>" +
+      '<button class="btn sm" onclick="markAsRead(\'' + w.id + '\')">' + iCheck + " Read</button>" +
+      '<button class="icon-btn" style="width:32px;height:32px" onclick="editWish(\'' + w.id + '\')" title="Edit">' + iEdit + "</button>" +
+      '<button class="icon-btn" style="width:32px;height:32px" onclick="delWish(\'' + w.id + '\')" title="Remove">' + iTrash + "</button></div></div>";
+  });
+  html += '<h3 style="font-size:15px;margin:18px 0 4px">Read</h3>';
+  if (!state.books.length) html += '<div class="muted">No books read yet.</div>';
+  const byYear = {};
+  state.books.forEach(b => { const y = yearOf(b.date); (byYear[y] = byYear[y] || []).push(b); });
+  Object.keys(byYear).sort((a, b) => +b - +a).forEach(y => {
+    html += '<div class="book-year">' + y + " · " + byYear[y].length + " book" + (byYear[y].length > 1 ? "s" : "") + "</div>";
+    byYear[y].sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach(b => {
+      html += '<div class="card book-card"><div style="flex:1;min-width:0">' +
+        '<div class="b-title">' + esc(b.title) + (b.author ? ' <span class="muted" style="font-weight:500">— ' + esc(b.author) + "</span>" : "") + "</div>" +
+        '<div class="rating">' + starsHTML(b.rating) + '<span class="muted" style="margin-left:6px;font-size:11px">' + (b.rating || 0) + "/10</span></div>" +
+        (b.summary ? '<div class="book-summary">' + esc(b.summary) + "</div>" : "") +
+        "</div>" +
+        '<div style="display:flex;flex-direction:column;gap:4px">' +
+        '<button class="icon-btn" style="width:32px;height:32px" onclick="editBook(\'' + b.id + '\')" title="Edit">' + iEdit + "</button>" +
+        '<button class="icon-btn" style="width:32px;height:32px" onclick="delBook(\'' + b.id + '\')" title="Delete">' + iTrash + "</button>" +
+        "</div></div>";
+    });
+  });
+  c.innerHTML = html;
 }
 
 /* ---------------- Workouts ---------------- */
@@ -1256,10 +1385,12 @@ function renderToday() {
 
   const sess = state.sessions.filter(s => s.date === todayISO);
   const logs = state.timerLogs.filter(l => l.date === todayISO);
+  const dayBooks = state.books.filter(b => b.date === todayISO);
   html += '<h3 style="font-size:15px;margin:18px 0 8px">Logged today</h3>';
-  if (!sess.length && !logs.length) html += '<div class="muted">Nothing logged yet today.</div>';
+  if (!sess.length && !logs.length && !dayBooks.length) html += '<div class="muted">Nothing logged yet today.</div>';
   sess.forEach(s => html += '<div class="row"><span class="badge w">W</span><span style="flex:1">' + esc(s.name) + '</span><span class="muted" style="font-size:12px">' + fmtDuration(s.durationSec) + '</span></div>');
   logs.forEach(l => html += '<div class="row"><span class="badge">T</span><span style="flex:1">' + esc(l.name) + '</span><span class="muted" style="font-size:12px">' + fmtDuration(l.durationSec) + '</span></div>');
+  dayBooks.forEach(b => html += '<div class="row"><span class="badge book">📖</span><span style="flex:1">' + esc(b.title) + '</span><span class="muted" style="font-size:12px">' + (b.rating || 0) + '/10</span></div>');
   c.innerHTML = html;
 }
 
@@ -1410,8 +1541,10 @@ function summarizeDay(ds) {
   if (n > 4) dots.push('<i class="dot-s" style="background:var(--muted)"></i>');
   const wcount = state.sessions.filter(s => s.date === ds).length;
   const tcount = state.timerLogs.filter(l => l.date === ds).length;
+  const bcount = state.books.filter(b => b.date === ds).length;
   if (wcount) badges.push('<span class="badge w">W' + (wcount > 1 ? wcount : "") + "</span>");
   if (tcount) badges.push('<span class="badge">T' + (tcount > 1 ? tcount : "") + "</span>");
+  if (bcount) badges.push('<span class="badge book">📖' + (bcount > 1 ? bcount : "") + "</span>");
   if (state.notes[ds]) badges.push('<span class="badge n">N</span>');
   return { dots: dots.join(""), badges: badges.join("") };
 }
@@ -1467,6 +1600,9 @@ function openDay(ds) {
   const logs = state.timerLogs.filter(l => l.date === ds);
   html += "<h4>Timers</h4>";
   html += logs.length ? logs.map(l => '<div class="row">' + esc(l.name) + " · " + fmtDuration(l.durationSec) + "</div>").join("") : '<div class="muted">None</div>';
+  const dayBooks = state.books.filter(b => b.date === ds);
+  html += "<h4>Books</h4>";
+  html += dayBooks.length ? dayBooks.map(b => '<div class="row">📖 ' + esc(b.title) + (b.author ? " · " + esc(b.author) : "") + ' <span class="muted" style="font-size:12px">' + (b.rating || 0) + "/10</span></div>").join("") : '<div class="muted">None</div>';
   html += "<h4>Note</h4>";
   html += '<div class="notes-edit"><textarea class="input" id="dayNote" placeholder="What happened that day?">' + esc(state.notes[ds] || "") + '</textarea></div>';
   html += '<div class="modal-actions"><button class="btn" id="saveDayNote">Save note</button><button class="btn ghost" onclick="closeModal()">Close</button></div>';
@@ -1770,6 +1906,7 @@ function renderAll() {
   else if (currentView === "workouts") renderWorkouts();
   else if (currentView === "timers") renderTimers();
   else if (currentView === "stats") renderStats();
+  else if (currentView === "books") renderBooks();
   else if (currentView === "calendar") renderCalendar();
   else if (currentView === "settings") renderSettings();
 }
