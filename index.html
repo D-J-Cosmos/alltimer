@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>AllTimer — Habits, Workouts & Timers</title>
+<style>
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --border:#e4e6ea; --text:#1a1d21; --muted:#767e8a;
+  --accent:#3b82f6; --accent-soft:#e9f0fe; --danger:#ef4444; --danger-soft:#fee2e2;
+  --ok:#10b981; --shadow:0 1px 3px rgba(16,24,40,.07); --shadow-lg:0 12px 32px rgba(16,24,40,.16);
+}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --surface:#191c22; --border:#292f38; --text:#e8eaee; --muted:#8b93a1;
+  --accent:#5b9dff; --accent-soft:#1e2c44; --danger:#f87171; --danger-soft:#3a2226;
+  --ok:#34d399; --shadow:0 1px 3px rgba(0,0,0,.4); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]){ --bg:#0f1115; --surface:#191c22; --border:#292f38; --text:#e8eaee; --muted:#8b93a1;
+    --accent:#5b9dff; --accent-soft:#1e2c44; --danger:#f87171; --danger-soft:#3a2226;
+    --ok:#34d399; --shadow:0 1px 3px rgba(0,0,0,.4); --shadow-lg:0 12px 32px rgba(0,0,0,.5); }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+.app{display:flex;min-height:100vh}
+.side{display:none}
+.main{flex:1;min-width:0}
+
+/* ---- Top bar ---- */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:6px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border);backdrop-filter:blur(8px)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:.2px}
+.brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff}
+.brand .logo svg{width:16px;height:16px}
+.topbar .spacer{flex:1}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn svg{width:19px;height:19px}
+
+/* ---- Content ---- */
+.content{max-width:760px;margin:0 auto;padding:16px 16px 96px}
+.page-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.page-head h2{margin:0;font-size:22px;flex:1}
+.page-head .sub{margin:2px 0 14px;color:var(--muted);font-size:13px;width:100%}
+
+/* ---- Buttons ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:12px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;transition:transform .05s ease, filter .15s}
+.btn:active{transform:scale(.97)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn.danger{background:var(--danger)}
+.btn.danger-ghost{background:var(--surface);color:var(--danger);border:1px solid var(--danger)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
+.btn.block{width:100%}
+.btn svg{width:16px;height:16px}
+
+/* ---- Cards ---- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 8px;font-size:16px}
+.muted{color:var(--muted);font-size:13px}
+
+/* ---- Habits ---- */
+.habit{display:flex;flex-direction:column;gap:8px}
+.habit-top{display:flex;align-items:center;gap:10px}
+.habit-top .check{width:26px;height:26px;min-width:26px;border-radius:8px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;background:var(--surface)}
+.habit-top .check.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.habit-top .check svg{width:15px;height:15px;opacity:0}
+.habit-top .check.done svg{opacity:1}
+.dot{width:12px;height:12px;min-width:12px;border-radius:50%;display:inline-block}
+.habit-name{font-weight:600;font-size:15px;flex:1;line-height:1.3}
+.habit-actions{display:flex;gap:4px}
+.habit-actions button{width:32px;height:32px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.habit-actions button:hover{background:var(--accent-soft);color:var(--accent)}
+.habit-actions svg{width:16px;height:16px}
+.habit-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.streak{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:20px;padding:3px 10px}
+.week{display:flex;gap:4px;align-items:center}
+.week i{width:9px;height:9px;border-radius:50%;background:var(--border)}
+.week i.on{background:var(--ok)}
+.subtasks{display:flex;flex-direction:column;gap:6px;padding-left:36px}
+.subtasks label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
+.subtasks input{width:17px;height:17px;accent-color:var(--ok)}
+.subtasks .s-done{text-decoration:line-through;color:var(--muted)}
+
+/* ---- Forms ---- */
+.field{display:block;margin-bottom:12px}
+.field>span{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.input,textarea.input,input.input{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:15px;font-family:inherit}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:var(--c);transition:.12s}
+.swatch.on{border-color:var(--text);transform:scale(1.12)}
+.subrow{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.subrow .input{flex:1}
+.x-btn{width:34px;height:34px;border:none;background:var(--danger-soft);color:var(--danger);border-radius:10px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ---- Workout editor ---- */
+.mode-seg{display:flex;gap:6px;flex-wrap:wrap}
+.mode-btn{flex:1;min-width:64px;padding:11px 8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:.1s}
+.mode-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.ex-row2{display:grid;grid-template-columns:1fr 64px 64px 30px;gap:6px;align-items:center;margin-bottom:6px}
+.ex-row2 .input{padding:8px 9px;font-size:13px}
+.ex-head2{display:grid;grid-template-columns:1fr 64px 64px 30px;gap:6px;margin-bottom:6px}
+.ex-head2 span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.ex-row{display:grid;grid-template-columns:1fr 46px 60px 60px 30px;gap:6px;align-items:center;margin-bottom:6px}
+.ex-row .input{padding:8px 10px;font-size:14px}
+.ex-chip{display:inline-block;font-size:12px;background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:3px 9px;margin:2px 4px 2px 0}
+.ex-list{display:flex;flex-direction:column;gap:8px}
+.mode-badge{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:2px 9px;vertical-align:middle;margin-left:6px;text-transform:uppercase}
+
+/* ---- Modal ---- */
+.overlay{position:fixed;inset:0;background:rgba(10,12,16,.55);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;z-index:100;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{width:100%;max-width:520px;max-height:88vh;overflow:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:20px 20px 24px;box-shadow:var(--shadow-lg);animation:up .18s}
+@media (min-width:640px){
+  .overlay{align-items:center}
+  .modal{border-radius:22px;margin:0 16px}
+}
+@keyframes up{from{transform:translateY(24px);opacity:.4}}
+.modal h3{margin:0 0 16px;font-size:19px}
+.modal h4{margin:16px 0 8px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions .btn{flex:1}
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.row-check{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:15px;cursor:pointer;border-bottom:1px solid var(--border)}
+.row-check:last-child{border-bottom:none}
+.row-check input{width:18px;height:18px;accent-color:var(--ok)}
+
+/* ---- Timers ---- */
+.timer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.timer-card-mini{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.timer-card-mini .t-name{font-weight:700;font-size:15px}
+.timer-card-mini .t-desc{font-size:12px;color:var(--muted);line-height:1.45}
+.timer-card-mini .t-btns{display:flex;gap:6px}
+.timer-card-mini .t-btns .btn{flex:1}
+
+.overlay-card{width:100%;max-width:400px;background:var(--surface);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:var(--shadow-lg);animation:up .2s}
+.overlay-card .t-name{font-size:16px;font-weight:700}
+.overlay-card .t-phase{margin-top:4px;font-size:13px;color:var(--muted)}
+.overlay-card .t-time{font-size:64px;font-weight:700;letter-spacing:2px;font-variant-numeric:tabular-nums;margin:14px 0 6px}
+.t-progress{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin:14px 0 20px}
+.t-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .2s linear}
+.t-btns{display:flex;gap:10px;justify-content:center}
+.t-btns .btn{min-width:110px}
+
+/* ---- Dashboard Today ---- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stats .stat b{display:block;font-size:24px;line-height:1.2}
+.stats .stat span{font-size:11px;color:var(--muted)}
+.bar{height:10px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:10px}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#8b5cf6);border-radius:99px;transition:width .3s}
+.row.click{cursor:pointer}
+.row.click:active{background:var(--accent-soft)}
+.check-mini{width:24px;height:24px;min-width:24px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:transparent;transition:.15s}
+.check-mini svg{width:13px;height:13px}
+.check-mini.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.streak.best{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+
+/* ---- Heatmap ---- */
+.heatmap-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.heatmap{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,10px);grid-auto-columns:10px;gap:3px;width:max-content}
+.hm-cell{width:10px;height:10px;border-radius:2.5px;background:var(--border);cursor:pointer}
+.hm-cell.l1{background:rgba(59,130,246,.3)}
+.hm-cell.l2{background:rgba(59,130,246,.55)}
+.hm-cell.l3{background:rgba(59,130,246,.8)}
+.hm-cell.l4{background:#3b82f6}
+.hm-legend{display:flex;align-items:center;gap:4px;margin-top:10px;font-size:10px;color:var(--muted)}
+.hm-legend .hm-cell{display:inline-block;margin:0 1px}
+
+/* ---- Workout session (minimal fullscreen timer) ---- */
+.workout-overlay{position:fixed;inset:0;z-index:90;background:#0b0e13;color:#f4f6f8;display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 22px max(20px,env(safe-area-inset-bottom));-webkit-user-select:none;user-select:none}
+.wo-top{display:flex;align-items:center;gap:10px;font-size:13px;color:#8b93a1}
+.wo-name{flex:1;font-weight:700;color:#e8ecf1;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wo-round{background:#1a2029;padding:4px 11px;border-radius:99px;font-weight:700;color:#dfe5ec;white-space:nowrap}
+.wo-pct{font-weight:800;color:#5b9dff;font-size:16px;min-width:48px;text-align:right}
+.wo-next{margin-top:auto;text-align:center;color:#7c8694;font-size:clamp(13px,3vw,19px);font-weight:600;text-transform:uppercase;letter-spacing:.6px;min-height:24px}
+.wo-next b{color:#b9c1cc;font-weight:700}
+.wo-current{margin-top:14px;text-align:center;font-size:clamp(44px,11vw,96px);font-weight:800;line-height:1.05;word-break:break-word;color:#f4f6f8}
+.wo-current.rest{color:#5b9dff}
+.wo-time{margin-top:10px;text-align:center;font-size:clamp(64px,18vw,150px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:1px}
+.wo-phase{margin-top:8px;text-align:center;font-size:13px;color:#8b93a1;min-height:18px;text-transform:uppercase;letter-spacing:.5px}
+.wo-adjust{display:flex;gap:8px;justify-content:center;margin:6px 0 2px}
+.wo-adjust button{padding:9px 14px;border:1px solid #262d38;background:transparent;color:#aeb6c2;border-radius:99px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.wo-adjust button:active{background:#1a2029}
+.wo-progress{height:10px;background:#1a2029;border-radius:99px;overflow:hidden;margin:24px 0 18px}
+.wo-fill{height:100%;background:linear-gradient(90deg,#5b9dff,#8b5cf6);border-radius:99px;width:0;transition:width .2s linear}
+.wo-btns{display:flex;gap:10px}
+.wo-btns button{flex:1;padding:17px 6px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+#woPause{background:#5b9dff;color:#0b0e13}
+#woSkip{background:#1f2733;color:#dfe5ec}
+#woFinish{background:#f43f5e;color:#fff}
+#woQuit{flex:.6;background:transparent;color:#6b7482;font-size:13px;border:1px solid #262d38}
+
+/* ---- Calendar ---- */
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-head span{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{min-height:56px;border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:5px;display:flex;flex-direction:column;gap:2px;cursor:pointer;align-items:flex-start;font-family:inherit;color:var(--text);text-align:left}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.out{opacity:.32;pointer-events:none}
+.cal-day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dnum{font-size:12px;font-weight:600}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:auto}
+.dot-s{width:8px;height:8px;border-radius:50%}
+.cal-badges{display:flex;gap:3px;flex-wrap:wrap}
+.badge{font-size:9px;font-weight:700;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 5px}
+.badge.w{background:var(--danger-soft);color:var(--danger)}
+.month-nav{display:flex;align-items:center;gap:8px}
+.month-nav h2{flex:1;text-align:center;font-size:18px;margin:0}
+
+/* ---- Settings ---- */
+.seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.seg button{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.toggle-row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.toggle{position:relative;width:46px;height:26px;flex:none}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .track{position:absolute;inset:0;background:var(--border);border-radius:99px;transition:.15s;cursor:pointer}
+.toggle .track:before{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle input:checked + .track{background:var(--ok)}
+.toggle input:checked + .track:before{transform:translateX(20px)}
+
+/* ---- Nav ---- */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom)}
+.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 0 8px;border:none;background:none;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.nav button svg{width:22px;height:22px}
+.nav button.active{color:var(--accent)}
+.nav button.active i{background:var(--accent-soft)}
+.nav i{display:flex;align-items:center;justify-content:center;width:38px;height:28px;border-radius:9px;font-style:normal}
+
+/* ---- Toast ---- */
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:200;box-shadow:var(--shadow-lg);max-width:88vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---- Desktop ---- */
+@media (min-width:900px){
+  .side{display:flex;flex-direction:column;width:230px;min-width:230px;background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh}
+  .side .brand{font-size:18px;padding:0 6px;margin-bottom:26px}
+  .side .nav{position:static;display:flex;flex-direction:column;gap:4px;grid-template-columns:none;background:none;border:none;padding:0;margin-bottom:16px}
+  .side .nav button{flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 12px;border-radius:12px;font-size:14px;width:100%}
+  .side .nav button i{width:34px;height:26px}
+  .side .nav button.active{background:var(--accent-soft)}
+  .side .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+  .topbar{position:static;justify-content:flex-end}
+  .topbar .brand{display:none}
+  .content{padding:24px 28px 60px;max-width:860px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="logo" id="logo"></span>AllTimer</div>
+    <nav class="nav">
+      <button data-view="today"><i></i>Today</button>
+      <button data-view="habits"><i></i>Habits</button>
+      <button data-view="workouts"><i></i>Workouts</button>
+      <button data-view="timers"><i></i>Timers</button>
+      <button data-view="calendar"><i></i>Calendar</button>
+      <button data-view="settings"><i></i>Settings</button>
+    </nav>
+    <div class="side-foot">
+      <button class="btn ghost sm" id="themeBtn"></button>
+      <button class="btn ghost sm" onclick="exportData()">Export data</button>
+      <button class="btn ghost sm" onclick="document.getElementById('importFile').click()">Import data</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importFile(this)">
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="brand" id="brandMobile"><span class="logo" id="logo2"></span>AllTimer</div>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="themeBtnTop" title="Toggle theme"></button>
+      <button class="icon-btn" onclick="exportData()" title="Export backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button>
+      <button class="icon-btn" onclick="document.getElementById('importFile2').click()" title="Import backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg></button>
+      <input type="file" id="importFile2" accept=".json,application/json" style="display:none" onchange="importFile(this)">
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<div class="workout-overlay" id="workoutOverlay" style="display:none">
+  <div class="wo-top">
+    <div class="wo-name" id="woName"></div>
+    <div class="wo-round" id="woRound"></div>
+    <div class="wo-pct" id="woPct"></div>
+  </div>
+  <div class="wo-next" id="woNext"></div>
+  <div class="wo-current" id="woCurrent">Start</div>
+  <div class="wo-time" id="woTime">0:00</div>
+  <div class="wo-phase" id="woPhase"></div>
+  <div class="wo-adjust">
+    <button onclick="adjustPhase(-30)">-30s</button>
+    <button onclick="adjustPhase(-5)">-5s</button>
+    <button onclick="adjustPhase(5)">+5s</button>
+    <button onclick="adjustPhase(30)">+30s</button>
+  </div>
+  <div class="wo-progress"><div class="wo-fill" id="woFill"></div></div>
+  <div class="wo-btns">
+    <button id="woPause" onclick="toggleWorkoutPause()">Pause</button>
+    <button id="woSkip" onclick="skipPhase()">Skip</button>
+    <button id="woFinish" onclick="finishWorkout()">Finish</button>
+    <button id="woQuit" onclick="quitWorkout()">Quit</button>
+  </div>
+</div>
+
+<div class="overlay" id="timerOverlay" style="display:none">
+  <div class="overlay-card">
+    <div class="t-name" id="tName"></div>
+    <div class="t-phase" id="tPhase"></div>
+    <div class="t-time" id="tTime">25:00</div>
+    <div class="t-progress"><div class="t-fill" id="tFill"></div></div>
+    <div class="t-btns">
+      <button class="btn" id="tPause" onclick="toggleTimerPause()">Pause</button>
+      <button class="btn danger" id="tStop" onclick="stopTimer()">Stop</button>
+      <button class="btn ghost" id="tClose" style="display:none" onclick="closeTimer()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------------- Utilities ---------------- */
+const $ = s => document.querySelector(s);
+const el = (tag, attrs, html) => { const n = document.createElement(tag); if (attrs) for (const k in attrs) n.setAttribute(k, attrs[k]); if (html != null) n.innerHTML = html; return n; };
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const pad = n => String(n).padStart(2, "0");
+const toISO = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const todayStr = () => toISO(new Date());
+const parseISO = s => { const p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtClock = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m + ":" + pad(s % 60); };
+const fmtDuration = sec => { sec = Math.round(sec || 0); const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; if (h) return h + "h " + pad(m) + "m"; if (m) return m + "m " + pad(s) + "s"; return s + "s"; };
+const fmtDateLong = ds => parseISO(ds).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const COLORS = ["#3b82f6", "#8b5cf6", "#ef4444", "#10b981", "#f59e0b", "#ec4899", "#06b6d4", "#84cc16"];
+const todayISO = todayStr();
+
+/* ---------------- Sound ---------------- */
+let audioCtx = null;
+function beep(freq, dur, vol) {
+  if (!state.settings.sound) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+function alarm() { beep(880, .5, .25); setTimeout(() => beep(660, .5, .25), 700); setTimeout(() => beep(440, .7, .25), 1400); }
+
+/* ---------------- Sound cues & vibration ---------------- */
+function buzz(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
+function cueGo() { beep(980, .18, .22); buzz(90); }
+function cueRest() { beep(520, .28, .2); buzz(200); }
+function cueDone() { alarm(); buzz([220, 120, 220]); }
+function cueForLabel(label) {
+  const l = (label || "").toLowerCase();
+  if (l.includes("break") || l.includes("rest") || l.includes("pause") || l.includes("hold")) cueRest(); else cueGo();
+}
+
+/* ---------------- Notifications & daily reminders ---------------- */
+function notify(title, body) {
+  if (!state.settings.notify) return;
+  try {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const n = new Notification(title, { body: body || "", tag: "alltimer" });
+      setTimeout(() => n.close(), 8000);
+    }
+  } catch (e) {}
+}
+let reminderTimer = null;
+function scheduleReminders() {
+  clearTimeout(reminderTimer);
+  const due = state.habits.filter(h => h.remind);
+  if (!due.length) return;
+  const now = new Date();
+  let next = null;
+  due.forEach(h => {
+    const p = h.remind.split(":").map(Number);
+    const t = new Date(now); t.setHours(p[0], p[1], 0, 0);
+    if (t <= now) t.setDate(t.getDate() + 1);
+    if (!next || t < next) next = t;
+  });
+  reminderTimer = setTimeout(() => {
+    const key = pad(next.getHours()) + ":" + pad(next.getMinutes());
+    due.filter(h => h.remind === key).forEach(h => notify("Habit reminder", h.name + " — daily check-in"));
+    scheduleReminders();
+  }, Math.max(1000, next - now));
+}
+
+/* ---------------- Icons ---------------- */
+const ICONS = {
+  today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  habits: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  workouts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/></svg>',
+  timers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M9 2h6"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9.5h18"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>'
+};
+const iCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const iEdit = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5z"/></svg>';
+const iTrash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+const iMoon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const iSun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+
+/* ---------------- State & persistence ---------------- */
+const KEY = "alltimer_data_v1";
+let state = null;
+
+function defaultData() {
+  const mkHabit = (name, color) => ({ id: uid(), name, color, target: 7, subtasks: [], created: todayISO });
+  const mkTimer = (name, repeat, phases) => ({ id: uid(), name, repeat, phases });
+  const mkEx = (name, duration, rest) => ({ id: uid(), name, duration, rest });
+  return {
+    version: 2,
+    habits: [
+      mkHabit("Drink water", "#3b82f6"),
+      mkHabit("Read 20 min", "#8b5cf6")
+    ],
+    habitLogs: {},
+    workouts: [
+      { id: uid(), name: "EMOM - Push-ups", mode: "emom", rounds: 8, cap: 600, exercises: [mkEx("Push-ups", 40, 20)] },
+      { id: uid(), name: "Tabata - Full body", mode: "tabata", rounds: 8, cap: 600, exercises: [mkEx("Squats", 20, 10), mkEx("Push-ups", 20, 10), mkEx("Plank", 20, 10)] },
+      { id: uid(), name: "AMRAP - 10 min", mode: "amrap", rounds: 0, cap: 600, exercises: [mkEx("Squats", 30, 15), mkEx("Burpees", 30, 15)] },
+      { id: uid(), name: "Interval circuit", mode: "interval", rounds: 3, cap: 600, exercises: [mkEx("Squats", 40, 10), mkEx("Push-ups", 40, 10), mkEx("Plank", 40, 10)] }
+    ],
+    sessions: [],
+    timerPresets: [
+      mkTimer("Pomodoro", 4, [{ label: "Work", sec: 25 * 60 }, { label: "Break", sec: 5 * 60 }]),
+      mkTimer("Meditation", 1, [{ label: "Meditate", sec: 10 * 60 }]),
+      mkTimer("Wim Hof", 3, [{ label: "Breathing", sec: 120 }, { label: "Hold", sec: 90 }])
+    ],
+    timerLogs: [],
+    settings: { theme: "auto", sound: true, notify: false }
+  };
+}
+
+function migrate() {
+  (state.workouts || []).forEach(w => {
+    if (!w.mode) w.mode = "interval";
+    if (w.cap == null) w.cap = 600;
+    if (w.rounds == null) w.rounds = 3;
+    if (Array.isArray(w.exercises) && w.exercises[0] && "sets" in w.exercises[0]) {
+      w.exercises = w.exercises.map(e => ({ id: e.id || uid(), name: e.name || "Exercise", duration: 40, rest: (e.rest == null ? 10 : e.rest) }));
+    }
+    if (!Array.isArray(w.exercises)) w.exercises = [];
+    w.exercises = w.exercises.map(e => ({ id: e.id || uid(), name: e.name || "Exercise", duration: Math.max(1, +e.duration || 40), rest: Math.max(0, e.rest == null ? 10 : +e.rest) }));
+  });
+  const hasNewMode = state.workouts.some(w => w.mode === "emom" || w.mode === "tabata" || w.mode === "amrap");
+  if (!hasNewMode) {
+    const mkEx = (name, duration, rest) => ({ id: uid(), name, duration, rest });
+    state.workouts.unshift(
+      { id: uid(), name: "EMOM - Push-ups", mode: "emom", rounds: 8, cap: 600, exercises: [mkEx("Push-ups", 40, 20)] },
+      { id: uid(), name: "Tabata - Full body", mode: "tabata", rounds: 8, cap: 600, exercises: [mkEx("Squats", 20, 10), mkEx("Push-ups", 20, 10), mkEx("Plank", 20, 10)] },
+      { id: uid(), name: "AMRAP - 10 min", mode: "amrap", rounds: 0, cap: 600, exercises: [mkEx("Squats", 30, 15), mkEx("Burpees", 30, 15)] }
+    );
+  }
+}
+
+function load() {
+  const d = defaultData();
+  state = d;
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      Object.assign(state, d, p);
+      state.settings = Object.assign({}, d.settings, (p && p.settings) || {});
+      if (!Array.isArray(state.habits)) state.habits = [];
+      if (!Array.isArray(state.workouts)) state.workouts = [];
+      if (!Array.isArray(state.sessions)) state.sessions = [];
+      if (!Array.isArray(state.timerPresets)) state.timerPresets = [];
+      if (!Array.isArray(state.timerLogs)) state.timerLogs = [];
+    }
+  } catch (e) { console.warn("load failed", e); }
+  migrate();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn("save failed", e); } }
+
+/* ---------------- Theme ---------------- */
+function applyTheme() {
+  const t = state.settings.theme;
+  const dark = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  const icon = dark ? iSun : iMoon;
+  const b1 = $("#themeBtn"), b2 = $("#themeBtnTop");
+  if (b1) b1.innerHTML = icon + " " + (dark ? "Light mode" : "Dark mode");
+  if (b2) b2.innerHTML = icon;
+}
+function quickTheme() {
+  const cur = document.documentElement.dataset.theme;
+  state.settings.theme = cur === "dark" ? "light" : "dark";
+  save(); applyTheme(); if (currentView === "settings") renderSettings();
+}
+
+/* ---------------- Toast ---------------- */
+let toastTimer = null;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/* ---------------- Modal ---------------- */
+let modalOverlay = null;
+function openModal(html, onMount) {
+  closeModal();
+  const ov = el("div", { class: "overlay" });
+  ov.innerHTML = '<div class="modal">' + html + "</div>";
+  ov.addEventListener("mousedown", e => { if (e.target === ov) closeModal(); });
+  document.body.appendChild(ov);
+  modalOverlay = ov;
+  if (onMount) onMount(ov);
+}
+function closeModal() { if (modalOverlay) { modalOverlay.remove(); modalOverlay = null; } }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+/* ---------------- Habits ---------------- */
+function isDoneOn(hid, ds) { return !!(state.habitLogs[ds] && state.habitLogs[ds][hid] && state.habitLogs[ds][hid].done); }
+function streakOf(habit) {
+  let s = 0, d = new Date();
+  if (!isDoneOn(habit.id, toISO(d))) d = addDays(d, -1);
+  while (isDoneOn(habit.id, toISO(d))) { s++; d = addDays(d, -1); }
+  return s;
+}
+function last7(habit) {
+  const out = [];
+  for (let i = 6; i >= 0; i--) out.push(isDoneOn(habit.id, toISO(addDays(new Date(), -i))));
+  return out;
+}
+function toggleHabit(hid, ds) {
+  ds = ds || todayISO;
+  state.habitLogs[ds] = state.habitLogs[ds] || {};
+  const cur = state.habitLogs[ds][hid] || { done: false, subtasks: {} };
+  cur.done = !cur.done;
+  state.habitLogs[ds][hid] = cur;
+  save(); renderAll();
+}
+function toggleSubtask(hid, sid, ds) {
+  ds = ds || todayISO;
+  state.habitLogs[ds] = state.habitLogs[ds] || {};
+  const cur = state.habitLogs[ds][hid] || { done: false, subtasks: {} };
+  cur.subtasks[sid] = !cur.subtasks[sid];
+  state.habitLogs[ds][hid] = cur;
+  save(); renderAll();
+}
+function delHabit(id) { if (confirm("Delete this habit and its history?")) { state.habits = state.habits.filter(h => h.id !== id); save(); renderAll(); } }
+
+function addHabit() { habitModal(); }
+function editHabit(id) { habitModal(id); }
+
+function habitModal(id) {
+  const h = id ? state.habits.find(x => x.id === id) : { name: "", color: COLORS[0], target: 7, subtasks: [] };
+  const swatches = COLORS.map(c => '<button type="button" class="swatch' + (c === h.color ? " on" : "") + '" data-c="' + c + '" style="--c:' + c + '"></button>').join("");
+  const subRows = (h.subtasks || []).map((s, i) => '<div class="subrow"><input class="input" value="' + esc(s.name) + '" data-si="' + i + '" placeholder="Sub-task"><button type="button" class="x-btn" data-si="' + i + '">x</button></div>').join("");
+  openModal(
+    "<h3>" + (id ? "Edit habit" : "New habit") + "</h3>" +
+    '<label class="field"><span>Name</span><input class="input" id="hName" value="' + esc(h.name) + '" placeholder="e.g. Drink water"></label>' +
+    '<div class="field"><span>Color</span><div class="swatches" id="hColors">' + swatches + "</div></div>" +
+    '<label class="field"><span>Target (days / week)</span><input class="input" id="hTarget" type="number" min="1" max="7" value="' + (h.target || 7) + '"></label>' +
+    '<label class="field"><span>Daily reminder (optional)</span><input class="input" id="hRemind" type="time" value="' + (h.remind || "") + '"></label>' +
+    '<div class="field"><span>Sub-tasks</span><div id="subList">' + subRows + '</div><button type="button" class="btn ghost sm" id="addSub">+ Add sub-task</button></div>' +
+    '<div class="modal-actions"><button class="btn" id="saveHabit">Save</button><button class="btn ghost" id="cancelHabit">Cancel</button></div>',
+    ov => {
+      ov.querySelectorAll(".swatch").forEach(b => b.onclick = () => { ov.querySelectorAll(".swatch").forEach(x => x.classList.remove("on")); b.classList.add("on"); });
+      ov.querySelector("#addSub").onclick = () => addSubRow(ov);
+      ov.querySelectorAll("#subList .x-btn").forEach(b => b.onclick = () => b.parentElement.remove());
+      ov.querySelector("#cancelHabit").onclick = closeModal;
+      ov.querySelector("#saveHabit").onclick = () => {
+        const name = ov.querySelector("#hName").value.trim();
+        if (!name) { ov.querySelector("#hName").focus(); return; }
+        const color = (ov.querySelector(".swatch.on") || ov.querySelector(".swatch")).dataset.c;
+        const target = Math.max(1, Math.min(7, +ov.querySelector("#hTarget").value || 7));
+        const remind = ov.querySelector("#hRemind").value || null;
+        const subtasks = [...ov.querySelectorAll("#subList .subrow input")].map(i => i.value.trim()).filter(Boolean).map(n => ({ id: uid(), name: n }));
+        if (id) { const hh = state.habits.find(x => x.id === id); Object.assign(hh, { name, color, target, subtasks, remind }); }
+        else state.habits.push({ id: uid(), name, color, target, subtasks, created: todayISO, remind });
+        save(); scheduleReminders(); closeModal(); renderAll();
+      };
+    }
+  );
+}
+function addSubRow(ov) {
+  const d = el("div", { class: "subrow" });
+  d.innerHTML = '<input class="input" placeholder="Sub-task"><button type="button" class="x-btn">x</button>';
+  d.querySelector(".x-btn").onclick = () => d.remove();
+  ov.querySelector("#subList").appendChild(d);
+}
+
+function bestStreakOf(h) {
+  const dates = Object.keys(state.habitLogs).filter(ds => isDoneOn(h.id, ds)).sort();
+  let best = 0, run = 0, prev = null;
+  dates.forEach(ds => {
+    const d = parseISO(ds);
+    if (prev) { run = (Math.round((d - prev) / 86400000) === 1) ? run + 1 : 1; }
+    else run = 1;
+    prev = d;
+    if (run > best) best = run;
+  });
+  return best;
+}
+function habitStats() {
+  const total = state.habits.length;
+  if (!total) return { total: 0, todayDone: 0, pct7: 0, best: 0 };
+  const todayDone = state.habits.filter(h => isDoneOn(h.id, todayISO)).length;
+  let done7 = 0, slots7 = 0;
+  for (let i = 6; i >= 0; i--) { const ds = toISO(addDays(new Date(), -i)); state.habits.forEach(h => { slots7++; if (isDoneOn(h.id, ds)) done7++; }); }
+  const best = state.habits.reduce((m, h) => Math.max(m, bestStreakOf(h)), 0);
+  return { total, todayDone, pct7: Math.round(done7 / slots7 * 100), best };
+}
+function heatmapHTML() {
+  const max = Math.max(1, state.habits.length);
+  const start = addDays(new Date(), -363);
+  let cells = "";
+  for (let w = 0; w < 52; w++) {
+    for (let d = 0; d < 7; d++) {
+      const ds = toISO(addDays(start, w * 7 + d));
+      let n = 0; state.habits.forEach(h => { if (isDoneOn(h.id, ds)) n++; });
+      const lvl = n === 0 ? 0 : Math.max(1, Math.round((n / max) * 4));
+      cells += '<div class="hm-cell' + (lvl ? " l" + lvl : "") + '" onclick="openDay(\'' + ds + '\')" title="' + fmtDateLong(ds) + " · " + n + "/" + max + '"></div>';
+    }
+  }
+  return '<div class="card"><h3>Heatmap <span class="muted" style="font-size:12px;font-weight:400">last 52 weeks</span></h3>' +
+    '<div class="heatmap-wrap"><div class="heatmap">' + cells + "</div></div>" +
+    '<div class="hm-legend"><span>Less</span><i class="hm-cell"></i><i class="hm-cell l1"></i><i class="hm-cell l2"></i><i class="hm-cell l3"></i><i class="hm-cell l4"></i><span>More</span></div></div>';
+}
+
+function renderHabits() {
+  const c = $("#content");
+  const st = habitStats();
+  let html = '<div class="page-head"><h2>Habits</h2><button class="btn sm" onclick="addHabit()">+ New habit</button></div>';
+  if (state.habits.length) {
+    html += '<div class="card stats"><div class="stat"><b>' + st.todayDone + "/" + st.total + '</b><span>done today</span></div>' +
+      '<div class="stat"><b>' + st.pct7 + '%</b><span>completion 7 days</span></div>' +
+      '<div class="stat"><b>' + st.best + '</b><span>best streak</span></div></div>';
+  }
+  if (!state.habits.length) html += '<div class="card muted" style="text-align:center;padding:30px">No habits yet.<br>Create your first habit to start tracking.</div>';
+  state.habits.forEach(h => {
+    const cur = state.habitLogs[todayISO] && state.habitLogs[todayISO][h.id];
+    const done = !!(cur && cur.done);
+    const st = (cur && cur.subtasks) || {};
+    const subs = h.subtasks || [];
+    const doneCount = subs.filter(s => st[s.id]).length;
+    const streak = streakOf(h);
+    const week = last7(h);
+    html += '<div class="card habit">' +
+      '<div class="habit-top">' +
+        '<button class="check' + (done ? " done" : "") + '" onclick="toggleHabit(\'' + h.id + '\')">' + iCheck + "</button>" +
+        '<i class="dot" style="background:' + h.color + '"></i>' +
+        '<span class="habit-name">' + esc(h.name) + "</span>" +
+        '<div class="habit-actions"><button onclick="editHabit(\'' + h.id + '\')" title="Edit">' + iEdit + "</button><button onclick=\"delHabit('" + h.id + "')\" title=" + '"Delete' + '">' + iTrash + "</button></div>" +
+      "</div>" +
+      '<div class="habit-meta">' +
+        '<span class="streak">' + streak + ' day streak</span>' +
+        '<span class="streak best">best ' + bestStreakOf(h) + '</span>' +
+        '<span class="week">' + week.map(w => "<i class='" + (w ? "on" : "") + "'></i>").join("") + "</span>" +
+      "</div>" +
+      (subs.length ? '<div class="subtasks">' + subs.map(s =>
+        '<label><input type="checkbox" ' + (st[s.id] ? "checked" : "") + ' onchange="toggleSubtask(\'' + h.id + "\','" + s.id + "')'" + '"><span class="' + (st[s.id] ? "s-done" : "") + '">' + esc(s.name) + "</span></label>"
+      ).join("") + "</div>" : "") +
+      (subs.length && !done && doneCount < subs.length ? '<div class="muted" style="font-size:12px">' + doneCount + "/" + subs.length + " sub-tasks</div>" : "") +
+    "</div>";
+  });
+  if (state.habits.length) html += heatmapHTML();
+  c.innerHTML = html;
+}
+
+/* ---------------- Workouts ---------------- */
+let activeWorkout = null;
+let woIv = null;
+
+function addWorkout() { workoutModal(); }
+function editWorkout(id) { workoutModal(id); }
+function delWorkout(id) { if (confirm("Delete this workout template?")) { state.workouts = state.workouts.filter(w => w.id !== id); save(); renderAll(); } }
+
+function exRow(ex) {
+  return '<div class="ex-row2" data-eid="' + ex.id + '">' +
+    '<input class="input ex-name" value="' + esc(ex.name) + '" placeholder="Exercise">' +
+    '<input class="input ex-dur" type="number" min="1" value="' + (ex.duration || 40) + '" title="Work seconds">' +
+    '<input class="input ex-rest" type="number" min="0" value="' + (ex.rest == null ? 10 : ex.rest) + '" title="Rest seconds">' +
+    '<button type="button" class="x-btn ex-del">x</button></div>';
+}
+
+function workoutModal(id) {
+  const w = id ? state.workouts.find(x => x.id === id) : { name: "", mode: "interval", rounds: 3, cap: 600, exercises: [{ id: uid(), name: "", duration: 40, rest: 10 }] };
+  const isNew = !id;
+  const modeBtns = ["interval", "emom", "tabata", "amrap"].map(m =>
+    '<button type="button" class="mode-btn' + (w.mode === m ? " on" : "") + '" data-m="' + m + '">' + m.toUpperCase() + "</button>").join("");
+  const rows = w.exercises.map(exRow).join("");
+  openModal(
+    "<h3>" + (id ? "Edit workout" : "New workout") + "</h3>" +
+    '<label class="field"><span>Name</span><input class="input" id="wName" value="' + esc(w.name) + '" placeholder="e.g. Push day"></label>' +
+    '<div class="field"><span>Type</span><div class="mode-seg" id="wMode">' + modeBtns + "</div></div>" +
+    '<label class="field" id="roundsField"><span>Rounds</span><input class="input" id="wRounds" type="number" min="1" max="99" value="' + (w.rounds || 3) + '"></label>' +
+    '<label class="field" id="capField"><span>Time cap (minutes)</span><input class="input" id="wCap" type="number" min="1" max="180" value="' + ((w.cap || 600) / 60) + '"></label>' +
+    '<div class="field"><span>Exercises</span><div class="ex-head2"><span>Name</span><span>Work (s)</span><span>Rest (s)</span><span></span></div><div id="exList">' + rows + '</div><button type="button" class="btn ghost sm" id="addEx">+ Add exercise</button></div>' +
+    '<div class="modal-actions"><button class="btn" id="saveWorkout">Save</button><button class="btn ghost" id="cancelWorkout">Cancel</button></div>',
+    ov => {
+      const syncMode = () => {
+        const m = (ov.querySelector(".mode-seg .mode-btn.on") || ov.querySelector(".mode-btn")).dataset.m;
+        ov.querySelector("#roundsField").style.display = (m === "amrap") ? "none" : "";
+        ov.querySelector("#capField").style.display = (m === "amrap") ? "" : "none";
+        return m;
+      };
+      ov.querySelectorAll(".mode-seg .mode-btn").forEach(b => b.onclick = () => {
+        ov.querySelectorAll(".mode-seg .mode-btn").forEach(x => x.classList.remove("on"));
+        b.classList.add("on");
+        const m = b.dataset.m;
+        if (isNew) {
+          const defs = { interval: { rounds: 3, dur: 40, rest: 10 }, emom: { rounds: 8, dur: 40, rest: 20 }, tabata: { rounds: 8, dur: 20, rest: 10 }, amrap: { rounds: 0, dur: 30, rest: 15 } };
+          const d = defs[m];
+          const row = ov.querySelector("#exList .ex-row2");
+          if (row && !row.querySelector(".ex-name").value.trim()) {
+            row.querySelector(".ex-dur").value = d.dur;
+            row.querySelector(".ex-rest").value = d.rest;
+          }
+          if (m === "amrap") ov.querySelector("#wCap").value = 10;
+          else ov.querySelector("#wRounds").value = d.rounds;
+        }
+        syncMode();
+      });
+      syncMode();
+      ov.querySelector("#addEx").onclick = () => {
+        const d = el("div", { class: "ex-row2" });
+        d.innerHTML = '<input class="input ex-name" placeholder="Exercise"><input class="input ex-dur" type="number" min="1" value="40"><input class="input ex-rest" type="number" min="0" value="10"><button type="button" class="x-btn ex-del">x</button>';
+        d.querySelector(".ex-del").onclick = () => d.remove();
+        ov.querySelector("#exList").appendChild(d);
+      };
+      ov.querySelectorAll("#exList .ex-del").forEach(b => b.onclick = () => b.parentElement.remove());
+      ov.querySelector("#cancelWorkout").onclick = closeModal;
+      ov.querySelector("#saveWorkout").onclick = () => {
+        const name = ov.querySelector("#wName").value.trim();
+        if (!name) { ov.querySelector("#wName").focus(); return; }
+        const mode = (ov.querySelector(".mode-seg .mode-btn.on") || ov.querySelector(".mode-btn")).dataset.m;
+        const exercises = [...ov.querySelectorAll("#exList .ex-row2")].map(r => {
+          const n = r.querySelector(".ex-name").value.trim();
+          if (!n) return null;
+          return { id: uid(), name: n, duration: Math.max(1, Math.round(+r.querySelector(".ex-dur").value || 40)), rest: Math.max(0, Math.round(+r.querySelector(".ex-rest").value || 0)) };
+        }).filter(Boolean);
+        if (!exercises.length) { toast("Add at least one exercise"); return; }
+        const rounds = mode === "amrap" ? 0 : Math.max(1, +ov.querySelector("#wRounds").value || 1);
+        const cap = mode === "amrap" ? Math.max(60, Math.round((+ov.querySelector("#wCap").value || 10) * 60)) : (w.cap || 600);
+        if (id) { const ww = state.workouts.find(x => x.id === id); Object.assign(ww, { name, mode, rounds, cap, exercises }); }
+        else state.workouts.push({ id: uid(), name, mode, rounds, cap, exercises });
+        save(); closeModal(); renderAll();
+      };
+    }
+  );
+}
+
+/* --- schedule builder: time-based workout -> list of work/rest segments --- */
+function buildSchedule(w) {
+  const mode = w.mode || "interval";
+  const exs = w.exercises || [];
+  const segs = [];
+  const pushWork = (e, round, roundOf) => segs.push({ type: "work", label: e.name, sec: e.duration * 1 || 0, round, roundOf });
+  const pushRest = (sec, round, roundOf) => segs.push({ type: "rest", label: "REST", sec: sec * 1 || 0, round, roundOf });
+  if (mode === "emom") {
+    const rounds = w.rounds || 1;
+    for (let r = 1; r <= rounds; r++) {
+      const e = exs[(r - 1) % exs.length];
+      const dur = e.duration * 1 || 40;
+      pushWork(e, r, rounds);
+      const rest = Math.max(0, 60 - dur);
+      if (r < rounds) pushRest(rest, r, rounds);
+    }
+  } else if (mode === "amrap") {
+    const cap = (w.cap || 600) * 1;
+    let r = 1, total = 0, guard = 0;
+    while (total < cap && guard < 1000) {
+      for (let i = 0; i < exs.length; i++) {
+        const e = exs[i];
+        pushWork(e, r, -1); total += e.duration * 1;
+        if (total >= cap) break;
+        pushRest(e.rest * 1 || 10, r, -1); total += e.rest * 1 || 10;
+      }
+      r++; guard++;
+    }
+  } else {
+    const rounds = w.rounds || 1;
+    for (let r = 1; r <= rounds; r++) {
+      exs.forEach((e, i) => {
+        pushWork(e, r, rounds);
+        const isLast = (r === rounds && i === exs.length - 1);
+        if (!isLast) pushRest(e.rest == null ? 10 : e.rest * 1, r, rounds);
+      });
+    }
+  }
+  let total = 0;
+  segs.forEach(s => { s.start = total; total += s.sec; });
+  segs.forEach((s, i) => {
+    for (let j = i + 1; j < segs.length; j++) { if (segs[j].type === "work") { s.nextLabel = segs[j].label; break; } }
+    if (!s.nextLabel) s.nextLabel = "";
+  });
+  return { segs, total };
+}
+
+function startWorkout(id) {
+  const w = state.workouts.find(x => x.id === id); if (!w) return;
+  const sched = buildSchedule(w);
+  if (!sched.segs.length) { toast("This workout has no exercises"); return; }
+  const amrap = w.mode === "amrap";
+  activeWorkout = {
+    workoutId: w.id, name: w.name, mode: w.mode, amrap,
+    cap: (w.cap || 600) * 1,
+    schedule: sched.segs, total: sched.total,
+    totalTarget: amrap ? Math.max(1, (w.cap || 600) * 1) : Math.max(1, sched.total),
+    idx: 0, remaining: sched.segs[0].sec, elapsed: 0, paused: false, startedAt: Date.now()
+  };
+  document.getElementById("workoutOverlay").style.display = "flex";
+  document.getElementById("woPause").textContent = "Pause";
+  updateWorkoutUI();
+  clearInterval(woIv);
+  woIv = setInterval(workoutTick, 1000);
+}
+function workoutTick() {
+  const w = activeWorkout; if (!w || w.paused) return;
+  w.remaining--; w.elapsed++;
+  updateWorkoutUI();
+  if (w.remaining <= 0) {
+    w.idx++;
+    if (w.idx >= w.schedule.length) { cueDone(); endWorkout(true); return; }
+    const seg = w.schedule[w.idx];
+    w.remaining = seg.sec;
+    if (seg.type === "rest") cueRest(); else cueGo();
+    updateWorkoutUI();
+  } else if (w.amrap && w.elapsed >= w.cap) {
+    cueDone(); endWorkout(true);
+  }
+}
+function updateWorkoutUI() {
+  const w = activeWorkout; if (!w) return;
+  const seg = w.schedule[w.idx];
+  document.getElementById("woName").textContent = w.name;
+  document.getElementById("woRound").textContent = w.mode === "emom" ? ("Minute " + seg.round + "/" + seg.roundOf) : (seg.roundOf > 0 ? ("Round " + seg.round + "/" + seg.roundOf) : ("Cycle " + seg.round));
+  const pct = Math.min(100, Math.round((w.elapsed / w.totalTarget) * 100));
+  document.getElementById("woPct").textContent = pct + "%";
+  document.getElementById("woTime").textContent = fmtClock(w.remaining);
+  document.getElementById("woFill").style.width = pct + "%";
+  const cur = document.getElementById("woCurrent"), nxt = document.getElementById("woNext"), ph = document.getElementById("woPhase");
+  if (seg.type === "rest") {
+    cur.className = "wo-current rest"; cur.textContent = "REST";
+    nxt.innerHTML = "UP NEXT&nbsp;&nbsp;<b>" + esc(seg.nextLabel || "") + "</b>";
+    ph.textContent = seg.nextLabel ? "Break before " + seg.nextLabel : "Break";
+  } else {
+    cur.className = "wo-current"; cur.textContent = seg.label;
+    nxt.innerHTML = seg.nextLabel ? "NEXT&nbsp;&nbsp;<b>" + esc(seg.nextLabel) + "</b>" : "";
+    ph.textContent = w.mode === "amrap" ? "AMRAP - keep moving" : (w.mode === "emom" ? "EMOM" : "");
+  }
+}
+function toggleWorkoutPause() {
+  const w = activeWorkout; if (!w) return;
+  w.paused = !w.paused;
+  document.getElementById("woPause").textContent = w.paused ? "Resume" : "Pause";
+}
+function skipPhase() {
+  const w = activeWorkout; if (!w) return;
+  w.idx++;
+  if (w.idx >= w.schedule.length) { cueDone(); endWorkout(true); return; }
+  const seg = w.schedule[w.idx];
+  w.remaining = seg.sec;
+  if (seg.type === "rest") cueRest(); else cueGo();
+  updateWorkoutUI();
+}
+function adjustPhase(delta) {
+  const w = activeWorkout; if (!w) return;
+  let r = w.remaining + delta;
+  if (r <= 0) {
+    w.idx++;
+    if (w.idx >= w.schedule.length) { cueDone(); endWorkout(true); return; }
+    w.remaining = w.schedule[w.idx].sec;
+    cueGo();
+  } else {
+    w.remaining = r;
+  }
+  updateWorkoutUI();
+}
+function finishWorkout() {
+  const w = activeWorkout; if (!w) return;
+  if (!confirm("Finish and save this workout?")) return;
+  endWorkout(true);
+}
+function quitWorkout() {
+  const w = activeWorkout; if (!w) return;
+  if (!confirm("Quit workout without saving?")) return;
+  endWorkout(false);
+}
+function endWorkout(saveIt) {
+  const w = activeWorkout;
+  clearInterval(woIv);
+  activeWorkout = null;
+  document.getElementById("workoutOverlay").style.display = "none";
+  if (saveIt && w) {
+    const workSegs = w.schedule.filter(s => s.type === "work");
+    const completed = workSegs.filter(s => w.elapsed >= s.start + s.sec).length;
+    state.sessions.unshift({
+      id: uid(), workoutId: w.workoutId, name: w.name, mode: w.mode, date: todayISO,
+      durationSec: w.elapsed, workDone: completed, workTotal: workSegs.length
+    });
+    save(); toast("Workout saved"); notify("Workout complete", w.name + " — " + fmtDuration(w.elapsed));
+  }
+  renderAll();
+}
+
+function renderWorkouts() {
+  const c = $("#content");
+  let html = '<div class="page-head"><h2>Workouts</h2><button class="btn sm" onclick="addWorkout()">+ New workout</button></div>';
+  if (!state.workouts.length) html += '<div class="card muted" style="text-align:center;padding:30px">No workout templates yet.<br>Create one to start training.</div>';
+  state.workouts.forEach(w => {
+    const info = w.mode === "amrap" ? "AMRAP · " + Math.round((w.cap || 600) / 60) + " min" : (w.mode.toUpperCase() + " · " + (w.rounds || 1) + " rounds");
+    const chips = w.exercises.map(e => '<span class="ex-chip">' + esc(e.name) + " " + e.duration + "s</span>").join("");
+    html += '<div class="card"><h3>' + esc(w.name) + '<span class="mode-badge">' + info + '</span></h3>' +
+      '<div class="ex-list" style="margin-bottom:12px">' + chips + "</div>" +
+      '<div style="display:flex;gap:8px"><button class="btn" style="flex:1" onclick="startWorkout(\'' + w.id + '\')">Start</button>' +
+      '<button class="btn ghost" onclick="editWorkout(\'' + w.id + '\')">' + iEdit + "</button>" +
+      '<button class="btn ghost" onclick="delWorkout(\'' + w.id + '\')">' + iTrash + "</button></div></div>";
+  });
+  html += '<h3 style="margin:22px 0 10px;font-size:16px">Recent sessions</h3>';
+  if (!state.sessions.length) html += '<div class="muted">No completed sessions yet.</div>';
+  state.sessions.slice(0, 20).forEach(s => {
+    const wd = (s.workTotal ? " · " + s.workDone + "/" + s.workTotal + " exercises" : "");
+    html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="flex:1;font-size:14px">' + esc(s.name) + '</b><span class="mode-badge">' + esc((s.mode || "").toUpperCase()) + '</span><span class="muted" style="font-size:12px">' + fmtDateLong(s.date) + " · " + fmtDuration(s.durationSec) + wd + "</span></div></div>";
+  });
+  c.innerHTML = html;
+}
+
+/* ---------------- Dashboard Today ---------------- */
+function renderToday() {
+  const c = $("#content");
+  const today = new Date();
+  const dateLabel = today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const st = habitStats();
+  let html = '<div class="page-head"><h2>Today</h2></div>' +
+    '<div class="muted" style="margin:-8px 0 14px">' + dateLabel + "</div>";
+  const pct = st.total ? Math.round(st.todayDone / st.total * 100) : 0;
+  html += '<div class="card today-progress"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>' + st.todayDone + '/' + st.total + ' habits done</b><span class="muted">' + pct + '%</span></div><div class="bar"><div class="bar-fill" style="width:' + pct + '%"></div></div></div>';
+
+  html += '<h3 style="font-size:15px;margin:16px 0 8px">Habits</h3>';
+  if (!state.habits.length) html += '<div class="muted" style="margin-bottom:8px">No habits yet.</div>';
+  state.habits.forEach(h => {
+    const done = isDoneOn(h.id, todayISO);
+    html += '<div class="row click" onclick="toggleHabit(\'' + h.id + '\')"><i class="dot" style="background:' + h.color + '"></i>' +
+      '<span style="flex:1;' + (done ? 'text-decoration:line-through;color:var(--muted)' : '') + '">' + esc(h.name) + '</span>' +
+      '<span class="check-mini' + (done ? ' done' : '') + '">' + iCheck + '</span></div>';
+  });
+  html += '<button class="btn ghost sm" style="margin-top:8px" onclick="addHabit()">+ New habit</button>';
+
+  html += '<h3 style="font-size:15px;margin:18px 0 8px">Workouts</h3>';
+  if (!state.workouts.length) html += '<div class="muted" style="margin-bottom:8px">No workouts yet.</div>';
+  state.workouts.forEach(w => {
+    html += '<div class="row"><span style="flex:1">' + esc(w.name) + '</span><button class="btn sm" onclick="startWorkout(\'' + w.id + '\')">Start</button></div>';
+  });
+  html += '<button class="btn ghost sm" style="margin-top:8px" onclick="addWorkout()">+ New workout</button>';
+
+  html += '<h3 style="font-size:15px;margin:18px 0 8px">Timers</h3>';
+  html += '<div class="timer-grid">';
+  state.timerPresets.forEach(t => {
+    html += '<div class="timer-card-mini"><div class="t-name">' + esc(t.name) + '</div><div class="t-desc">' + esc(phaseSummary(t)) + '</div><div class="t-btns"><button class="btn" onclick="startTimer(\'' + t.id + '\')">Start</button></div></div>';
+  });
+  html += '</div>';
+
+  const sess = state.sessions.filter(s => s.date === todayISO);
+  const logs = state.timerLogs.filter(l => l.date === todayISO);
+  html += '<h3 style="font-size:15px;margin:18px 0 8px">Logged today</h3>';
+  if (!sess.length && !logs.length) html += '<div class="muted">Nothing logged yet today.</div>';
+  sess.forEach(s => html += '<div class="row"><span class="badge w">W</span><span style="flex:1">' + esc(s.name) + '</span><span class="muted" style="font-size:12px">' + fmtDuration(s.durationSec) + '</span></div>');
+  logs.forEach(l => html += '<div class="row"><span class="badge">T</span><span style="flex:1">' + esc(l.name) + '</span><span class="muted" style="font-size:12px">' + fmtDuration(l.durationSec) + '</span></div>');
+  c.innerHTML = html;
+}
+
+/* ---------------- Timers ---------------- */
+function addTimer() { timerModal(); }
+function editTimer(id) { timerModal(id); }
+function delTimer(id) { if (confirm("Delete this timer?")) { state.timerPresets = state.timerPresets.filter(t => t.id !== id); save(); renderAll(); } }
+
+function timerModal(id) {
+  const t = id ? state.timerPresets.find(x => x.id === id) : { name: "", repeat: 1, phases: [{ label: "", sec: 300 }] };
+  const rows = t.phases.map((ph, i) =>
+    '<div class="ex-row" style="grid-template-columns:1fr 120px 30px">' +
+      '<input class="input ph-label" value="' + esc(ph.label) + '" placeholder="Phase name">' +
+      '<input class="input ph-min" type="number" min="0.05" step="0.25" value="' + (ph.sec / 60).toFixed(2).replace(/0+$/, "").replace(/\.$/, "") + '">' +
+      '<button type="button" class="x-btn ph-del">x</button>' +
+    "</div>"
+  ).join("");
+  openModal(
+    "<h3>" + (id ? "Edit timer" : "New timer") + "</h3>" +
+    '<label class="field"><span>Name</span><input class="input" id="tName2" value="' + esc(t.name) + '" placeholder="e.g. Cold shower"></label>' +
+    '<label class="field"><span>Rounds</span><input class="input" id="tRepeat" type="number" min="1" max="99" value="' + (t.repeat || 1) + '"></label>' +
+    '<div class="field"><span>Phases (durations in minutes)</span><div id="phList">' + rows + '</div><button type="button" class="btn ghost sm" id="addPh">+ Add phase</button></div>' +
+    '<div class="modal-actions"><button class="btn" id="saveTimer">Save</button><button class="btn ghost" id="cancelTimer">Cancel</button></div>',
+    ov => {
+      ov.querySelector("#addPh").onclick = () => {
+        const d = el("div", { class: "ex-row" });
+        d.style.gridTemplateColumns = "1fr 120px 30px";
+        d.innerHTML = '<input class="input ph-label" placeholder="Phase name"><input class="input ph-min" type="number" min="0.05" step="0.25" value="5"><button type="button" class="x-btn ph-del">x</button>';
+        d.querySelector(".ph-del").onclick = () => d.remove();
+        ov.querySelector("#phList").appendChild(d);
+      };
+      ov.querySelectorAll("#phList .ph-del").forEach(b => b.onclick = () => b.parentElement.remove());
+      ov.querySelector("#cancelTimer").onclick = closeModal;
+      ov.querySelector("#saveTimer").onclick = () => {
+        const name = ov.querySelector("#tName2").value.trim();
+        if (!name) { ov.querySelector("#tName2").focus(); return; }
+        const repeat = Math.max(1, +ov.querySelector("#tRepeat").value || 1);
+        const phases = [...ov.querySelectorAll("#phList .ex-row")].map(r => {
+          const label = r.querySelector(".ph-label").value.trim();
+          const min = parseFloat(r.querySelector(".ph-min").value);
+          return (label && min > 0) ? { label, sec: Math.round(min * 60) } : null;
+        }).filter(Boolean);
+        if (!phases.length) { toast("Add at least one phase"); return; }
+        if (id) { const tt = state.timerPresets.find(x => x.id === id); Object.assign(tt, { name, repeat, phases }); }
+        else state.timerPresets.push({ id: uid(), name, repeat, phases });
+        save(); closeModal(); renderAll();
+      };
+    }
+  );
+}
+
+function phaseSummary(p) {
+  return p.phases.map(ph => ph.label + " " + fmtClock(ph.sec)).join(" · ") + (p.repeat > 1 ? "  x" + p.repeat : "");
+}
+
+function renderTimers() {
+  const c = $("#content");
+  let html = '<div class="page-head"><h2>Timers</h2><button class="btn sm" onclick="addTimer()">+ Custom</button></div>';
+  html += '<div class="timer-grid">';
+  state.timerPresets.forEach(t => {
+    html += '<div class="timer-card-mini"><div class="t-name">' + esc(t.name) + "</div>" +
+      '<div class="t-desc">' + esc(phaseSummary(t)) + "</div>" +
+      '<div class="t-btns"><button class="btn" onclick="startTimer(\'' + t.id + '\')">Start</button>' +
+      '<button class="btn ghost sm" onclick="editTimer(\'' + t.id + '\')">' + iEdit + "</button>" +
+      '<button class="btn ghost sm" onclick="delTimer(\'' + t.id + '\')">' + iTrash + "</button></div></div>";
+  });
+  html += "</div>";
+  html += '<h3 style="margin:22px 0 10px;font-size:16px">Today\'s sessions</h3>';
+  const todayLogs = state.timerLogs.filter(l => l.date === todayISO);
+  if (!todayLogs.length) html += '<div class="muted">No timer completed today.</div>';
+  todayLogs.forEach(l => html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1;font-size:14px">' + esc(l.name) + '</b><span class="muted" style="font-size:12px">' + fmtDuration(l.durationSec) + "</span></div></div>");
+  c.innerHTML = html;
+}
+
+/* ---------------- Timer engine ---------------- */
+let activeTimer = null, timerIv = null;
+function startTimer(id) {
+  const p = state.timerPresets.find(x => x.id === id); if (!p) return;
+  const phases = [];
+  for (let r = 1; r <= p.repeat; r++) for (const ph of p.phases) phases.push({ label: ph.label, sec: ph.sec, round: r, roundOf: p.repeat });
+  activeTimer = { presetId: p.id, name: p.name, phases, idx: 0, remaining: phases[0].sec, total: phases[0].sec, paused: false, startedAt: Date.now(), done: false };
+  $("#timerOverlay").style.display = "flex";
+  $("#tStop").style.display = ""; $("#tClose").style.display = "none"; $("#tPause").style.display = "";
+  $("#tPause").textContent = "Pause";
+  updateTimerUI();
+  cueGo();
+  clearInterval(timerIv);
+  timerIv = setInterval(tick, 1000);
+}
+function tick() {
+  if (!activeTimer || activeTimer.paused || activeTimer.done) return;
+  activeTimer.remaining--;
+  updateTimerUI();
+  if (activeTimer.remaining <= 0) {
+    activeTimer.idx++;
+    if (activeTimer.idx >= activeTimer.phases.length) { finishTimer(); return; }
+    const ph = activeTimer.phases[activeTimer.idx];
+    activeTimer.remaining = ph.sec; activeTimer.total = ph.sec;
+    cueForLabel(ph.label);
+    updateTimerUI();
+  }
+}
+function updateTimerUI() {
+  if (!activeTimer) return;
+  const ph = activeTimer.phases[activeTimer.idx];
+  document.getElementById("tName").textContent = activeTimer.name;
+  document.getElementById("tPhase").textContent = ph.label + (ph.roundOf > 1 ? " · round " + ph.round + "/" + ph.roundOf : "");
+  document.getElementById("tTime").textContent = fmtClock(activeTimer.remaining);
+  document.getElementById("tFill").style.width = Math.max(0, Math.min(100, (activeTimer.remaining / activeTimer.total) * 100)) + "%";
+}
+function toggleTimerPause() {
+  if (!activeTimer) return;
+  activeTimer.paused = !activeTimer.paused;
+  document.getElementById("tPause").textContent = activeTimer.paused ? "Resume" : "Pause";
+}
+function stopTimer() {
+  clearInterval(timerIv); activeTimer = null;
+  $("#timerOverlay").style.display = "none";
+  renderAll();
+}
+function closeTimer() {
+  clearInterval(timerIv); activeTimer = null;
+  $("#timerOverlay").style.display = "none";
+  save(); renderAll();
+}
+function finishTimer() {
+  clearInterval(timerIv);
+  activeTimer.done = true;
+  cueDone();
+  const dur = Math.round((Date.now() - activeTimer.startedAt) / 1000);
+  state.timerLogs.unshift({ id: uid(), presetId: activeTimer.presetId, name: activeTimer.name, date: todayISO, durationSec: dur });
+  save();
+  notify("Timer complete", activeTimer.name + " — " + fmtDuration(dur));
+  $("#tPause").style.display = "none"; $("#tStop").style.display = "none"; $("#tClose").style.display = "";
+  $("#tPhase").textContent = "Complete!";
+}
+
+/* ---------------- Calendar ---------------- */
+let calCursor = new Date();
+
+function calMove(d) { calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + d, 1); renderCalendar(); }
+function calToday() { calCursor = new Date(); renderCalendar(); }
+
+function summarizeDay(ds) {
+  const dots = [], badges = [];
+  let n = 0;
+  state.habits.forEach(h => { if (isDoneOn(h.id, ds)) { n++; if (n <= 4) dots.push('<i class="dot-s" style="background:' + h.color + '"></i>'); } });
+  if (n > 4) dots.push('<i class="dot-s" style="background:var(--muted)"></i>');
+  const wcount = state.sessions.filter(s => s.date === ds).length;
+  const tcount = state.timerLogs.filter(l => l.date === ds).length;
+  if (wcount) badges.push('<span class="badge w">W' + (wcount > 1 ? wcount : "") + "</span>");
+  if (tcount) badges.push('<span class="badge">T' + (tcount > 1 ? tcount : "") + "</span>");
+  return { dots: dots.join(""), badges: badges.join("") };
+}
+
+function renderCalendar() {
+  const c = $("#content");
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  const start = addDays(new Date(y, m, 1), -((new Date(y, m, 1).getDay() + 6) % 7));
+  let html = '<div class="page-head month-nav"><button class="btn ghost sm" onclick="calMove(-1)">&larr;</button>' +
+    "<h2>" + MONTHS[m] + " " + y + "</h2>" +
+    '<button class="btn ghost sm" onclick="calMove(1)">&rarr;</button>' +
+    '<button class="btn ghost sm" onclick="calToday()">Today</button></div>';
+  html += '<div class="cal-head">' + "MTWTFSS".split("").map(d => "<span>" + d + "</span>").join("") + "</div>";
+  html += '<div class="cal">';
+  for (let i = 0; i < 42; i++) {
+    const d = addDays(start, i), ds = toISO(d);
+    const inMonth = d.getMonth() === m;
+    const sd = summarizeDay(ds);
+    html += '<button class="cal-day' + (inMonth ? "" : " out") + (ds === todayISO ? " today" : "") + '" onclick="openDay(\'' + ds + '\')">' +
+      '<span class="dnum">' + d.getDate() + "</span>" +
+      '<span class="cal-dots">' + sd.dots + "</span>" +
+      '<span class="cal-badges">' + sd.badges + "</span></button>";
+  }
+  html += "</div>";
+  c.innerHTML = html;
+}
+
+function toggleHabitDay(hid, ds) { toggleHabit(hid, ds); openDay(ds); }
+
+function openDay(ds) {
+  let html = "<h3>" + fmtDateLong(ds) + "</h3>";
+  html += "<h4>Habits</h4>";
+  html += state.habits.length ? state.habits.map(h =>
+    '<label class="row-check"><input type="checkbox" ' + (isDoneOn(h.id, ds) ? "checked" : "") + ' onchange="toggleHabitDay(\'' + h.id + "\','" + ds + '\')"><i class="dot" style="background:' + h.color + '"></i>' + esc(h.name) + "</label>"
+  ).join("") : '<div class="muted">None</div>';
+  const sess = state.sessions.filter(s => s.date === ds);
+  html += "<h4>Workouts</h4>";
+  html += sess.length ? sess.map(s => '<div class="row">' + esc(s.name) + " · " + fmtDuration(s.durationSec) + "</div>").join("") : '<div class="muted">None</div>';
+  const logs = state.timerLogs.filter(l => l.date === ds);
+  html += "<h4>Timers</h4>";
+  html += logs.length ? logs.map(l => '<div class="row">' + esc(l.name) + " · " + fmtDuration(l.durationSec) + "</div>").join("") : '<div class="muted">None</div>';
+  openModal(html + '<div class="modal-actions"><button class="btn" onclick="closeModal()">Close</button></div>');
+}
+
+/* ---------------- Settings ---------------- */
+function renderSettings() {
+  const c = $("#content");
+  const t = state.settings.theme;
+  const seg = ["auto", "light", "dark"].map(v => '<button data-t="' + v + '" class="' + (t === v ? "on" : "") + '">' + v.charAt(0).toUpperCase() + v.slice(1) + "</button>").join("");
+  c.innerHTML =
+    '<div class="page-head"><h2>Settings</h2></div>' +
+    '<div class="card"><h3>Appearance</h3>' +
+      '<label class="field"><span>Theme</span><div class="seg" id="themeSeg">' + seg + "</div></label>" +
+      '<div class="toggle-row"><span>Sound alerts</span><label class="toggle"><input type="checkbox" id="soundToggle" ' + (state.settings.sound ? "checked" : "") + '><span class="track"></span></label></div>' +
+      '<div class="toggle-row" style="margin-top:12px"><span>Notifications</span><label class="toggle"><input type="checkbox" id="notifyToggle" ' + (state.settings.notify ? "checked" : "") + '><span class="track"></span></label></div>' +
+      '<div class="muted" style="margin-top:8px">Alerts when timers / workouts finish, and daily habit reminders (only while this page is open).</div>' +
+    "</div>" +
+    '<div class="card"><h3>Data</h3>' +
+      '<div class="muted" style="margin-bottom:12px">All your data is stored in this browser. Export a JSON backup regularly and keep it on Google Drive, then import it on any device.</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
+        '<button class="btn" onclick="exportData()">Export backup</button>' +
+        '<button class="btn ghost" onclick="document.getElementById(\'importFile3\').click()">Import backup</button>' +
+        '<button class="btn danger-ghost" onclick="resetAll()">Reset all data</button>' +
+      "</div>" +
+      '<input type="file" id="importFile3" accept=".json,application/json" style="display:none" onchange="importFile(this)">' +
+    "</div>" +
+    '<div class="card"><h3>Offline & hosting</h3>' +
+      '<div class="muted" style="line-height:1.6">This app works fully offline from a single file. To access it from your phone anywhere:' +
+      "<ul style=\"margin:8px 0 0;padding-left:18px\">" +
+      "<li>Open this <code>index.html</code> on your phone — everything is local.</li>" +
+      "<li>Or host it free on GitHub Pages / Netlify, then open the URL on both devices.</li>" +
+      "<li>Move backups between devices via the Export / Import buttons.</li></ul></div>" +
+    "</div>";
+  $("#themeSeg").querySelectorAll("button").forEach(b => b.onclick = () => {
+    state.settings.theme = b.dataset.t; save(); applyTheme();
+    $("#themeSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  });
+  $("#soundToggle").onchange = e => { state.settings.sound = e.target.checked; save(); };
+  $("#notifyToggle").onchange = e => {
+    if (e.target.checked) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        state.settings.notify = true; save(); scheduleReminders(); return;
+      }
+      e.target.checked = false;
+      try {
+        Notification.requestPermission().then(p => {
+          state.settings.notify = (p === "granted");
+          save(); scheduleReminders(); renderSettings();
+          toast(p === "granted" ? "Notifications enabled" : "Notifications denied");
+        });
+      } catch (err) { toast("Notifications not supported"); }
+    } else {
+      state.settings.notify = false; save(); scheduleReminders();
+    }
+  };
+}
+
+/* ---------------- Export / Import / Reset ---------------- */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "alltimer-backup-" + todayISO + ".json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("Backup downloaded");
+}
+function importFile(input) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const p = JSON.parse(r.result);
+      if (!p || !Array.isArray(p.habits)) throw new Error("Not an AllTimer backup");
+      const d = defaultData();
+      Object.assign(state, d, p);
+      state.settings = Object.assign({}, d.settings, p.settings || {});
+      migrate();
+      save(); applyTheme(); renderAll(); scheduleReminders(); toast("Data imported");
+    } catch (e) { toast("Import failed: " + e.message); }
+    input.value = "";
+  };
+  r.readAsText(f);
+}
+function resetAll() {
+  if (!confirm("Delete ALL data? This cannot be undone. Export a backup first.")) return;
+  localStorage.removeItem(KEY);
+  load(); applyTheme(); renderAll(); scheduleReminders(); toast("Data reset");
+}
+
+/* ---------------- Navigation ---------------- */
+let currentView = "today";
+function switchView(v) {
+  currentView = v;
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+  renderAll();
+}
+function renderAll() {
+  closeModal();
+  if (currentView === "today") renderToday();
+  else if (currentView === "habits") renderHabits();
+  else if (currentView === "workouts") renderWorkouts();
+  else if (currentView === "timers") renderTimers();
+  else if (currentView === "calendar") renderCalendar();
+  else if (currentView === "settings") renderSettings();
+}
+
+/* ---------------- Init ---------------- */
+function setNavIcons() {
+  document.querySelectorAll(".nav button").forEach(b => {
+    const i = b.querySelector("i");
+    if (i && ICONS[b.dataset.view]) i.innerHTML = ICONS[b.dataset.view];
+  });
+  const logoSvg = ICONS.timers;
+  const l1 = $("#logo"), l2 = $("#logo2");
+  if (l1) l1.innerHTML = logoSvg;
+  if (l2) l2.innerHTML = logoSvg;
+}
+function init() {
+  load();
+  setNavIcons();
+  applyTheme();
+  document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => switchView(b.dataset.view)));
+  document.getElementById("themeBtnTop").addEventListener("click", quickTheme);
+  document.getElementById("themeBtn").addEventListener("click", quickTheme);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+  scheduleReminders();
+  switchView("today");
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
