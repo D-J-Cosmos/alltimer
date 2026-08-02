@@ -144,7 +144,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .timer-card-mini{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
 .timer-card-mini .t-name{font-weight:700;font-size:15px}
 .timer-card-mini .t-desc{font-size:12px;color:var(--muted);line-height:1.45}
-.timer-card-mini .t-btns{display:flex;gap:6px}
+.timer-card-mini .t-btns{display:flex;gap:6px;flex-wrap:wrap}
 .timer-card-mini .t-btns .btn{flex:1}
 
 .overlay-card{width:100%;max-width:400px;background:var(--surface);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:var(--shadow-lg);animation:up .2s}
@@ -153,8 +153,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .overlay-card .t-time{font-size:64px;font-weight:700;letter-spacing:2px;font-variant-numeric:tabular-nums;margin:14px 0 6px}
 .t-progress{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin:14px 0 20px}
 .t-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .2s linear}
-.t-btns{display:flex;gap:10px;justify-content:center}
-.t-btns .btn{min-width:110px}
+.overlay-card .t-btns{display:flex;gap:10px;justify-content:center}
+.overlay-card .t-btns .btn{min-width:110px}
 
 /* ---- Dashboard Today ---- */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
