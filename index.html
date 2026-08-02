@@ -293,6 +293,7 @@ canvas.chart{width:100%;height:100%;display:block}
 
 /* ---- Nav ---- */
 .nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom)}
+.nav-sep{display:none}
 .nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 0 8px;border:none;background:none;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
 .nav button svg{width:22px;height:22px}
 .nav button.active{color:var(--accent)}
@@ -311,6 +312,7 @@ canvas.chart{width:100%;height:100%;display:block}
   .side .nav button{flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 12px;border-radius:12px;font-size:14px;width:100%}
   .side .nav button i{width:34px;height:26px}
   .side .nav button.active{background:var(--accent-soft)}
+  .side .nav .nav-sep{display:block;height:1px;background:var(--border);margin:8px 12px}
   .side .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
   .topbar{position:static;justify-content:flex-end}
   .topbar .brand{display:none}
@@ -327,9 +329,10 @@ canvas.chart{width:100%;height:100%;display:block}
       <button data-view="habits"><i></i>Habits</button>
       <button data-view="workouts"><i></i>Workouts</button>
       <button data-view="timers"><i></i>Timers</button>
-      <button data-view="stats"><i></i>Stats</button>
       <button data-view="books"><i></i>Books</button>
       <button data-view="calendar"><i></i>Calendar</button>
+      <div class="nav-sep"></div>
+      <button data-view="stats"><i></i>Stats</button>
       <button data-view="settings"><i></i>Settings</button>
     </nav>
     <div class="side-foot">
@@ -530,6 +533,8 @@ function migrate() {
   if (!state.achievements) state.achievements = {};
   if (!Array.isArray(state.books)) state.books = [];
   if (!Array.isArray(state.wishlist)) state.wishlist = [];
+  (state.books || []).forEach(b => { if (b.isbn == null) b.isbn = ""; if ((b.rating || 0) > 5) b.rating = Math.max(0, Math.min(5, Math.round((b.rating || 0) / 2))); });
+  (state.wishlist || []).forEach(w => { if (w.isbn == null) w.isbn = ""; });
   (state.workouts || []).forEach(w => {
     if (!w.mode) w.mode = "interval";
     if (w.cap == null) w.cap = 600;
@@ -965,8 +970,10 @@ function renderStats() {
 }
 
 /* ---------------- Books ---------------- */
-const starsHTML = r => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => '<i class="' + (i < (r || 0) ? "" : "off") + '">' + iStar + "</i>").join("");
+let booksTab = "read";
+const starsHTML = r => [0, 1, 2, 3, 4].map(i => '<i class="' + (i < (r || 0) ? "" : "off") + '">' + iStar + "</i>").join("");
 const yearOf = ds => { const n = parseInt(String(ds || "").slice(0, 4), 10); return isNaN(n) ? new Date().getFullYear() : n; };
+function switchBooksTab(t) { booksTab = t; renderBooks(); }
 
 function addBook() { bookModal(); }
 function editBook(id) { bookModal(id); }
@@ -974,17 +981,18 @@ function delBook(id) { if (confirm("Delete this book entry?")) { state.books = s
 function addToWish() { wishlistModal(); }
 function editWish(id) { wishlistModal(id); }
 function delWish(id) { if (confirm("Remove from your reading list?")) { state.wishlist = state.wishlist.filter(w => w.id !== id); save(); renderAll(); } }
-function markAsRead(wid) { const w = state.wishlist.find(x => x.id === wid); if (w) bookModal(null, { title: w.title, author: w.author || "", _wish: wid }); }
+function markAsRead(wid) { const w = state.wishlist.find(x => x.id === wid); if (w) bookModal(null, { title: w.title, author: w.author || "", isbn: w.isbn || "", _wish: wid }); }
 
 function bookModal(id, prefill) {
-  const b = id ? state.books.find(x => x.id === id) : (prefill || { title: "", author: "", date: todayISO, rating: 0, summary: "" });
-  const stars = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => '<span class="star' + (n <= (b.rating || 0) ? " on" : "") + '" data-r="' + n + '">★</span>').join("");
+  const b = id ? state.books.find(x => x.id === id) : (prefill || { title: "", author: "", isbn: "", date: todayISO, rating: 0, summary: "" });
+  const stars = [1, 2, 3, 4, 5].map(n => '<span class="star' + (n <= (b.rating || 0) ? " on" : "") + '" data-r="' + n + '">★</span>').join("");
   openModal(
     "<h3>" + (id ? "Edit book" : (prefill ? "Mark as read" : "Add a read book")) + "</h3>" +
     '<label class="field"><span>Title</span><input class="input" id="bTitle" value="' + esc(b.title) + '" placeholder="e.g. The Alchemist"></label>' +
     '<label class="field"><span>Author</span><input class="input" id="bAuthor" value="' + esc(b.author) + '" placeholder="Optional"></label>' +
+    '<label class="field"><span>ISBN</span><input class="input" id="bIsbn" value="' + esc(b.isbn || "") + '" placeholder="Optional"></label>' +
     '<label class="field"><span>Date finished</span><input class="input" id="bDate" type="date" value="' + esc(b.date || todayISO) + '"></label>' +
-    '<div class="field"><span>Rating /10</span><div class="stars" id="bStars">' + stars + "</div></div>" +
+    '<div class="field"><span>Rating /5</span><div class="stars" id="bStars">' + stars + "</div></div>" +
     '<label class="field"><span>Quick summary</span><textarea class="input" id="bSummary" rows="3" placeholder="What did you think?">' + esc(b.summary || "") + '</textarea></label>' +
     '<div class="modal-actions"><button class="btn" id="saveBook">Save</button><button class="btn ghost" id="cancelBook">Cancel</button></div>',
     ov => {
@@ -997,12 +1005,13 @@ function bookModal(id, prefill) {
         const title = ov.querySelector("#bTitle").value.trim();
         if (!title) { ov.querySelector("#bTitle").focus(); return; }
         const author = ov.querySelector("#bAuthor").value.trim();
+        const isbn = ov.querySelector("#bIsbn").value.trim();
         const date = ov.querySelector("#bDate").value || todayISO;
         const rating = ov.querySelectorAll(".star.on").length;
         const summary = ov.querySelector("#bSummary").value.trim();
-        if (id) { const bb = state.books.find(x => x.id === id); Object.assign(bb, { title, author, date, rating, summary }); }
+        if (id) { const bb = state.books.find(x => x.id === id); Object.assign(bb, { title, author, isbn, date, rating, summary }); }
         else {
-          state.books.push({ id: uid(), title, author, date, rating, summary, created: todayISO });
+          state.books.push({ id: uid(), title, author, isbn, date, rating, summary, created: todayISO });
           addXp(XP_BOOK);
           if (prefill && prefill._wish) state.wishlist = state.wishlist.filter(w => w.id !== prefill._wish);
         }
@@ -1012,11 +1021,12 @@ function bookModal(id, prefill) {
   );
 }
 function wishlistModal(id) {
-  const w = id ? state.wishlist.find(x => x.id === id) : { title: "", author: "" };
+  const w = id ? state.wishlist.find(x => x.id === id) : { title: "", author: "", isbn: "" };
   openModal(
     "<h3>" + (id ? "Edit book" : "Add to reading list") + "</h3>" +
     '<label class="field"><span>Title</span><input class="input" id="wTitle" value="' + esc(w.title) + '" placeholder="e.g. Sapiens"></label>' +
     '<label class="field"><span>Author</span><input class="input" id="wAuthor" value="' + esc(w.author) + '" placeholder="Optional"></label>' +
+    '<label class="field"><span>ISBN</span><input class="input" id="wIsbn" value="' + esc(w.isbn || "") + '" placeholder="Optional"></label>' +
     '<div class="modal-actions"><button class="btn" id="saveWish">Save</button><button class="btn ghost" id="cancelWish">Cancel</button></div>',
     ov => {
       ov.querySelector("#cancelWish").onclick = closeModal;
@@ -1024,8 +1034,9 @@ function wishlistModal(id) {
         const title = ov.querySelector("#wTitle").value.trim();
         if (!title) { ov.querySelector("#wTitle").focus(); return; }
         const author = ov.querySelector("#wAuthor").value.trim();
-        if (id) { const ww = state.wishlist.find(x => x.id === id); Object.assign(ww, { title, author }); }
-        else state.wishlist.push({ id: uid(), title, author, created: todayISO });
+        const isbn = ov.querySelector("#wIsbn").value.trim();
+        if (id) { const ww = state.wishlist.find(x => x.id === id); Object.assign(ww, { title, author, isbn }); }
+        else state.wishlist.push({ id: uid(), title, author, isbn, created: todayISO });
         save(); closeModal(); renderAll();
       };
     }
@@ -1033,34 +1044,40 @@ function wishlistModal(id) {
 }
 function renderBooks() {
   const c = $("#content");
+  const seg = [["read", "Read"], ["wish", "To read"]].map(([v, l]) =>
+    '<button data-bt="' + v + '" class="' + (booksTab === v ? "on" : "") + '" onclick="switchBooksTab(\'' + v + '\')">' + l + "</button>").join("");
   let html = '<div class="page-head"><h2>Books</h2><button class="btn ghost sm" onclick="addToWish()">+ To read</button><button class="btn sm" onclick="addBook()">+ Add read</button></div>';
-  html += '<h3 style="font-size:15px;margin:4px 0 8px">To read</h3>';
-  if (!state.wishlist.length) html += '<div class="muted" style="margin-bottom:8px">Nothing on your list yet.</div>';
-  state.wishlist.forEach(w => {
-    html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
-      '<span style="flex:1;min-width:120px"><b>' + esc(w.title) + '</b>' + (w.author ? ' <span class="muted">— ' + esc(w.author) + "</span>" : "") + "</span>" +
-      '<button class="btn sm" onclick="markAsRead(\'' + w.id + '\')">' + iCheck + " Read</button>" +
-      '<button class="icon-btn" style="width:32px;height:32px" onclick="editWish(\'' + w.id + '\')" title="Edit">' + iEdit + "</button>" +
-      '<button class="icon-btn" style="width:32px;height:32px" onclick="delWish(\'' + w.id + '\')" title="Remove">' + iTrash + "</button></div></div>";
-  });
-  html += '<h3 style="font-size:15px;margin:18px 0 4px">Read</h3>';
-  if (!state.books.length) html += '<div class="muted">No books read yet.</div>';
-  const byYear = {};
-  state.books.forEach(b => { const y = yearOf(b.date); (byYear[y] = byYear[y] || []).push(b); });
-  Object.keys(byYear).sort((a, b) => +b - +a).forEach(y => {
-    html += '<div class="book-year">' + y + " · " + byYear[y].length + " book" + (byYear[y].length > 1 ? "s" : "") + "</div>";
-    byYear[y].sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach(b => {
-      html += '<div class="card book-card"><div style="flex:1;min-width:0">' +
-        '<div class="b-title">' + esc(b.title) + (b.author ? ' <span class="muted" style="font-weight:500">— ' + esc(b.author) + "</span>" : "") + "</div>" +
-        '<div class="rating">' + starsHTML(b.rating) + '<span class="muted" style="margin-left:6px;font-size:11px">' + (b.rating || 0) + "/10</span></div>" +
-        (b.summary ? '<div class="book-summary">' + esc(b.summary) + "</div>" : "") +
-        "</div>" +
-        '<div style="display:flex;flex-direction:column;gap:4px">' +
-        '<button class="icon-btn" style="width:32px;height:32px" onclick="editBook(\'' + b.id + '\')" title="Edit">' + iEdit + "</button>" +
-        '<button class="icon-btn" style="width:32px;height:32px" onclick="delBook(\'' + b.id + '\')" title="Delete">' + iTrash + "</button>" +
-        "</div></div>";
+  html += '<div class="seg" style="margin-bottom:12px">' + seg + "</div>";
+  if (booksTab === "wish") {
+    if (!state.wishlist.length) html += '<div class="card muted" style="text-align:center;padding:26px">Nothing on your list yet.<br>Add a book you want to read.</div>';
+    state.wishlist.forEach(w => {
+      html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+        '<span style="flex:1;min-width:120px"><b>' + esc(w.title) + '</b>' + (w.author ? ' <span class="muted">— ' + esc(w.author) + "</span>" : "") +
+        (w.isbn ? ' <span class="muted" style="font-size:11px">· ISBN ' + esc(w.isbn) + "</span>" : "") + "</span>" +
+        '<button class="btn sm" onclick="markAsRead(\'' + w.id + '\')">' + iCheck + " Read</button>" +
+        '<button class="icon-btn" style="width:32px;height:32px" onclick="editWish(\'' + w.id + '\')" title="Edit">' + iEdit + "</button>" +
+        '<button class="icon-btn" style="width:32px;height:32px" onclick="delWish(\'' + w.id + '\')" title="Remove">' + iTrash + "</button></div></div>";
     });
-  });
+  } else {
+    if (!state.books.length) html += '<div class="card muted" style="text-align:center;padding:26px">No books read yet.<br>Add the first one you finished.</div>';
+    const byYear = {};
+    state.books.forEach(b => { const y = yearOf(b.date); (byYear[y] = byYear[y] || []).push(b); });
+    Object.keys(byYear).sort((a, b) => +b - +a).forEach(y => {
+      html += '<div class="book-year">' + y + " · " + byYear[y].length + " book" + (byYear[y].length > 1 ? "s" : "") + "</div>";
+      byYear[y].sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach(b => {
+        html += '<div class="card book-card"><div style="flex:1;min-width:0">' +
+          '<div class="b-title">' + esc(b.title) + (b.author ? ' <span class="muted" style="font-weight:500">— ' + esc(b.author) + "</span>" : "") + "</div>" +
+          '<div class="rating">' + starsHTML(b.rating) + '<span class="muted" style="margin-left:6px;font-size:11px">' + (b.rating || 0) + "/5</span></div>" +
+          (b.isbn ? '<div class="muted" style="font-size:11px;margin-top:3px">ISBN ' + esc(b.isbn) + "</div>" : "") +
+          (b.summary ? '<div class="book-summary">' + esc(b.summary) + "</div>" : "") +
+          "</div>" +
+          '<div style="display:flex;flex-direction:column;gap:4px">' +
+          '<button class="icon-btn" style="width:32px;height:32px" onclick="editBook(\'' + b.id + '\')" title="Edit">' + iEdit + "</button>" +
+          '<button class="icon-btn" style="width:32px;height:32px" onclick="delBook(\'' + b.id + '\')" title="Delete">' + iTrash + "</button>" +
+          "</div></div>";
+      });
+    });
+  }
   c.innerHTML = html;
 }
 
@@ -1390,7 +1407,7 @@ function renderToday() {
   if (!sess.length && !logs.length && !dayBooks.length) html += '<div class="muted">Nothing logged yet today.</div>';
   sess.forEach(s => html += '<div class="row"><span class="badge w">W</span><span style="flex:1">' + esc(s.name) + '</span><span class="muted" style="font-size:12px">' + fmtDuration(s.durationSec) + '</span></div>');
   logs.forEach(l => html += '<div class="row"><span class="badge">T</span><span style="flex:1">' + esc(l.name) + '</span><span class="muted" style="font-size:12px">' + fmtDuration(l.durationSec) + '</span></div>');
-  dayBooks.forEach(b => html += '<div class="row"><span class="badge book">📖</span><span style="flex:1">' + esc(b.title) + '</span><span class="muted" style="font-size:12px">' + (b.rating || 0) + '/10</span></div>');
+  dayBooks.forEach(b => html += '<div class="row"><span class="badge book">📖</span><span style="flex:1">' + esc(b.title) + '</span><span class="muted" style="font-size:12px">' + (b.rating || 0) + '/5</span></div>');
   c.innerHTML = html;
 }
 
@@ -1602,7 +1619,7 @@ function openDay(ds) {
   html += logs.length ? logs.map(l => '<div class="row">' + esc(l.name) + " · " + fmtDuration(l.durationSec) + "</div>").join("") : '<div class="muted">None</div>';
   const dayBooks = state.books.filter(b => b.date === ds);
   html += "<h4>Books</h4>";
-  html += dayBooks.length ? dayBooks.map(b => '<div class="row">📖 ' + esc(b.title) + (b.author ? " · " + esc(b.author) : "") + ' <span class="muted" style="font-size:12px">' + (b.rating || 0) + "/10</span></div>").join("") : '<div class="muted">None</div>';
+  html += dayBooks.length ? dayBooks.map(b => '<div class="row">📖 ' + esc(b.title) + (b.author ? " · " + esc(b.author) : "") + ' <span class="muted" style="font-size:12px">' + (b.rating || 0) + "/5</span></div>").join("") : '<div class="muted">None</div>';
   html += "<h4>Note</h4>";
   html += '<div class="notes-edit"><textarea class="input" id="dayNote" placeholder="What happened that day?">' + esc(state.notes[ds] || "") + '</textarea></div>';
   html += '<div class="modal-actions"><button class="btn" id="saveDayNote">Save note</button><button class="btn ghost" onclick="closeModal()">Close</button></div>';

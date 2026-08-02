@@ -7,7 +7,7 @@ Habits, time-based workouts & wellness timers in a single-page web app.
 - **Workouts** — time-based modes: Interval, EMOM, Tabata, AMRAP
 - **Timers** — Pomodoro, Meditation, Wim Hof
 - **Stats** — charts, consistency, XP levels & achievements
-- **Books** — reading list & read books by year, rated /10 with summaries
+- **Books** — reading list & read books by year (tabs), rated with 5 stars, ISBN & summaries
 - **Calendar** — month view of everything logged
 - **Sync** — optional auto-sync to Google Drive across devices
 
