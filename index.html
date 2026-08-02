@@ -34,7 +34,8 @@ html,body{margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh}
 
 .app{display:flex;min-height:100vh}
-.side{display:none}
+.side{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
+.side .brand,.side .side-foot{display:none}
 .main{flex:1;min-width:0}
 
 /* ---- Top bar ---- */
@@ -292,7 +293,7 @@ canvas.chart{width:100%;height:100%;display:block}
 .toggle input:checked + .track:before{transform:translateX(20px)}
 
 /* ---- Nav ---- */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom)}
+.nav{display:grid;grid-template-columns:repeat(8,1fr)}
 .nav-sep{display:none}
 .nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 0 8px;border:none;background:none;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
 .nav button svg{width:22px;height:22px}
@@ -306,8 +307,8 @@ canvas.chart{width:100%;height:100%;display:block}
 
 /* ---- Desktop ---- */
 @media (min-width:900px){
-  .side{display:flex;flex-direction:column;width:230px;min-width:230px;background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh}
-  .side .brand{font-size:18px;padding:0 6px;margin-bottom:26px}
+  .side{display:flex;flex-direction:column;width:230px;min-width:230px;background:var(--surface);border-right:1px solid var(--border);border-top:none;padding:20px 14px;position:sticky;top:0;height:100vh}
+  .side .brand{display:flex;font-size:18px;padding:0 6px;margin-bottom:26px}
   .side .nav{position:static;display:flex;flex-direction:column;gap:4px;grid-template-columns:none;background:none;border:none;padding:0;margin-bottom:16px}
   .side .nav button{flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 12px;border-radius:12px;font-size:14px;width:100%}
   .side .nav button i{width:34px;height:26px}
