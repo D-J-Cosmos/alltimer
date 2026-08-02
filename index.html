@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1115">
+<meta name="description" content="AllTimer — habits, time-based workouts, wellness timers & calendar in one page.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AllTimer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>AllTimer — Habits, Workouts & Timers</title>
 <style>
 :root{
@@ -212,6 +220,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .month-nav{display:flex;align-items:center;gap:8px}
 .month-nav h2{flex:1;text-align:center;font-size:18px;margin:0}
 
+/* ---- Stats & gamification ---- */
+.chart-box{position:relative;width:100%;height:150px}
+.chart-box.h{height:170px}
+canvas.chart{width:100%;height:100%;display:block}
+.level-card{display:flex;align-items:center;gap:14px}
+.level-badge{width:54px;height:54px;min-width:54px;border-radius:16px;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;box-shadow:var(--shadow)}
+.level-badge b{font-size:20px;line-height:1}
+.level-badge span{font-size:9px;font-weight:600;opacity:.9;text-transform:uppercase;letter-spacing:.5px}
+.level-right{flex:1;min-width:0}
+.level-name{font-weight:700;font-size:15px}
+.xp-bar{height:10px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:8px}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),#8b5cf6);border-radius:99px;transition:width .3s}
+.xp-meta{font-size:11.5px;color:var(--muted);margin-top:5px}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ach{border:1px solid var(--border);border-radius:14px;padding:10px;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.ach .em{font-size:22px;line-height:1}
+.ach b{font-size:12.5px;margin-top:4px}
+.ach span{font-size:10.5px;color:var(--muted);line-height:1.35}
+.ach.locked{opacity:.45;filter:grayscale(1)}
+.ach.new{outline:2px solid var(--ok);outline-offset:1px}
+.habit-row-s{display:flex;align-items:center;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)}
+.habit-row-s:last-child{border-bottom:none}
+.habit-row-s .grow{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.habit-row-s .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-bar{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden;max-width:120px}
+.mini-bar i{display:block;height:100%;background:var(--ok)}
+
+/* ---- Notes ---- */
+.notes-edit{margin-top:6px}
+.notes-edit textarea{min-height:70px;resize:vertical}
+.cal-note{width:14px;height:3px;border-radius:99px;background:var(--accent);margin-top:auto}
+.badge.n{background:var(--accent-soft);color:var(--accent)}
+
+/* ---- Google Drive sync ---- */
+.drive-head{display:flex;align-items:center;gap:10px}
+.drive-dot{width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.drive-dot.on{background:var(--ok)}
+.drive-dot.busy{background:var(--accent)}
+.hint{font-size:12px;color:var(--muted);line-height:1.55}
+.hint code{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:1px 5px;font-size:11px}
+.drive-actions{display:flex;flex-wrap:wrap;gap:8px}
+.drive-actions .btn{flex:1;min-width:120px}
+
 /* ---- Settings ---- */
 .seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .seg button{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
@@ -225,7 +276,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .toggle input:checked + .track:before{transform:translateX(20px)}
 
 /* ---- Nav ---- */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom)}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(7,1fr);padding-bottom:env(safe-area-inset-bottom)}
 .nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 0 8px;border:none;background:none;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
 .nav button svg{width:22px;height:22px}
 .nav button.active{color:var(--accent)}
@@ -260,6 +311,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
       <button data-view="habits"><i></i>Habits</button>
       <button data-view="workouts"><i></i>Workouts</button>
       <button data-view="timers"><i></i>Timers</button>
+      <button data-view="stats"><i></i>Stats</button>
       <button data-view="calendar"><i></i>Calendar</button>
       <button data-view="settings"><i></i>Settings</button>
     </nav>
@@ -406,6 +458,7 @@ const ICONS = {
   habits: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   workouts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/></svg>',
   timers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M9 2h6"/></svg>',
+  stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
   calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9.5h18"/></svg>',
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>'
 };
@@ -424,7 +477,7 @@ function defaultData() {
   const mkTimer = (name, repeat, phases) => ({ id: uid(), name, repeat, phases });
   const mkEx = (name, duration, rest) => ({ id: uid(), name, duration, rest });
   return {
-    version: 2,
+    version: 3,
     habits: [
       mkHabit("Drink water", "#3b82f6"),
       mkHabit("Read 20 min", "#8b5cf6")
@@ -443,11 +496,17 @@ function defaultData() {
       mkTimer("Wim Hof", 3, [{ label: "Breathing", sec: 120 }, { label: "Hold", sec: 90 }])
     ],
     timerLogs: [],
+    notes: {},
+    xp: 0,
+    achievements: {},
     settings: { theme: "auto", sound: true, notify: false }
   };
 }
 
 function migrate() {
+  if (!state.notes) state.notes = {};
+  if (state.xp == null) state.xp = 0;
+  if (!state.achievements) state.achievements = {};
   (state.workouts || []).forEach(w => {
     if (!w.mode) w.mode = "interval";
     if (w.cap == null) w.cap = 600;
@@ -483,11 +542,20 @@ function load() {
       if (!Array.isArray(state.sessions)) state.sessions = [];
       if (!Array.isArray(state.timerPresets)) state.timerPresets = [];
       if (!Array.isArray(state.timerLogs)) state.timerLogs = [];
+      if (!state.notes) state.notes = {};
+      if (state.xp == null) state.xp = 0;
+      if (!state.achievements) state.achievements = {};
     }
   } catch (e) { console.warn("load failed", e); }
   migrate();
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn("save failed", e); } }
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn("save failed", e); }
+  if (gdrive.autoPush && gdrive.clientId && gdrive.fileId) {
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => pushToDrive(true), 2500);
+  }
+}
 
 /* ---------------- Theme ---------------- */
 function applyTheme() {
@@ -528,6 +596,62 @@ function openModal(html, onMount) {
 function closeModal() { if (modalOverlay) { modalOverlay.remove(); modalOverlay = null; } }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
+/* ---------------- Gamification (XP, levels, achievements) ---------------- */
+const LEVEL_NAMES = ["Beginner", "Explorer", "Regular", "Disciplined", "Athlete", "Warrior", "Master", "Legend"];
+const XP_PER_LEVEL = 100;
+const XP_HABIT = 10, XP_SUB = 2, XP_WORKOUT = 25, XP_TIMER = 10, XP_NOTE = 5;
+const ACHIEVEMENTS = [
+  { id: "first", icon: "🌱", name: "First steps", desc: "Complete your first habit", earned: s => s.done >= 1 },
+  { id: "week", icon: "🔥", name: "On a roll", desc: "Reach a 7-day habit streak", earned: s => s.bestStreak >= 7 },
+  { id: "month", icon: "⚡", name: "Unstoppable", desc: "Reach a 30-day habit streak", earned: s => s.bestStreak >= 30 },
+  { id: "hundred", icon: "💯", name: "Century club", desc: "Complete 100 habits in total", earned: s => s.done >= 100 },
+  { id: "day", icon: "🌟", name: "Perfect day", desc: "Complete every habit in one day", earned: s => s.perfectDay },
+  { id: "athlete", icon: "💪", name: "Athlete", desc: "Complete 10 workouts", earned: s => s.workouts >= 10 },
+  { id: "grinder", icon: "🏋️", name: "Grinder", desc: "Complete 50 workouts", earned: s => s.workouts >= 50 },
+  { id: "zen", icon: "🧘", name: "Zen master", desc: "Complete 25 wellness timers", earned: s => s.timers >= 25 },
+  { id: "early", icon: "🌅", name: "Early bird", desc: "Complete a habit before 9 AM", earned: s => s.earlyBird },
+  { id: "scribe", icon: "✍️", name: "Scribe", desc: "Write a daily note", earned: s => s.notes >= 1 }
+];
+function levelOf(xp) {
+  const level = Math.floor((xp || 0) / XP_PER_LEVEL) + 1;
+  return { level, name: LEVEL_NAMES[Math.min(LEVEL_NAMES.length - 1, level - 1)], into: (xp || 0) % XP_PER_LEVEL };
+}
+function xpStats() {
+  let done = 0, perfectDay = false, earlyBird = false;
+  Object.keys(state.habitLogs || {}).forEach(ds => {
+    const day = state.habitLogs[ds], habits = state.habits;
+    let d = 0;
+    habits.forEach(h => {
+      if (day[h.id] && day[h.id].done) {
+        d++;
+        if (day[h.id].at) { const dt = new Date(day[h.id].at); if (dt.getHours() + dt.getMinutes() / 60 < 9) earlyBird = true; }
+      }
+    });
+    done += d;
+    if (habits.length && d === habits.length) perfectDay = true;
+  });
+  let bestStreak = 0;
+  state.habits.forEach(h => { bestStreak = Math.max(bestStreak, bestStreakOf(h)); });
+  return { done, bestStreak, perfectDay, workouts: (state.sessions || []).length, timers: (state.timerLogs || []).length, notes: Object.keys(state.notes || {}).filter(k => state.notes[k]).length, earlyBird };
+}
+function checkAchievements() {
+  const s = xpStats(), fresh = [];
+  ACHIEVEMENTS.forEach(a => {
+    if (!state.achievements[a.id] && a.earned(s)) { state.achievements[a.id] = todayISO; fresh.push(a); }
+  });
+  return fresh;
+}
+function addXp(n) {
+  const before = levelOf(state.xp);
+  state.xp = Math.max(0, (state.xp || 0) + n);
+  const after = levelOf(state.xp);
+  const fresh = checkAchievements();
+  save();
+  if (after.level > before.level) toast("Level up! You reached level " + after.level + " — " + after.name + " 👏");
+  fresh.forEach((a, i) => setTimeout(() => toast("Achievement unlocked: " + a.icon + " " + a.name), i * 1600));
+  return fresh;
+}
+
 /* ---------------- Habits ---------------- */
 function isDoneOn(hid, ds) { return !!(state.habitLogs[ds] && state.habitLogs[ds][hid] && state.habitLogs[ds][hid].done); }
 function streakOf(habit) {
@@ -546,8 +670,10 @@ function toggleHabit(hid, ds) {
   state.habitLogs[ds] = state.habitLogs[ds] || {};
   const cur = state.habitLogs[ds][hid] || { done: false, subtasks: {} };
   cur.done = !cur.done;
+  if (cur.done) cur.at = Date.now(); else delete cur.at;
   state.habitLogs[ds][hid] = cur;
-  save(); renderAll();
+  addXp(cur.done ? XP_HABIT : -XP_HABIT);
+  renderAll();
 }
 function toggleSubtask(hid, sid, ds) {
   ds = ds || todayISO;
@@ -555,7 +681,8 @@ function toggleSubtask(hid, sid, ds) {
   const cur = state.habitLogs[ds][hid] || { done: false, subtasks: {} };
   cur.subtasks[sid] = !cur.subtasks[sid];
   state.habitLogs[ds][hid] = cur;
-  save(); renderAll();
+  addXp(cur.subtasks[sid] ? XP_SUB : -XP_SUB);
+  renderAll();
 }
 function delHabit(id) { if (confirm("Delete this habit and its history?")) { state.habits = state.habits.filter(h => h.id !== id); save(); renderAll(); } }
 
@@ -676,6 +803,136 @@ function renderHabits() {
   });
   if (state.habits.length) html += heatmapHTML();
   c.innerHTML = html;
+}
+
+/* ---------------- Stats & charts ---------------- */
+function weeklyData() {
+  const labels = [], values = [];
+  for (let w = 7; w >= 0; w--) {
+    const start = addDays(new Date(), -(w * 7 + 6));
+    let done = 0, slots = 0;
+    for (let d = 0; d < 7; d++) { const ds = toISO(addDays(start, d)); state.habits.forEach(h => { slots++; if (isDoneOn(h.id, ds)) done++; }); }
+    labels.push(start.toLocaleDateString("en-US", { month: "short", day: "numeric" }));
+    values.push(slots ? Math.round(done / slots * 100) : 0);
+  }
+  return { labels, values };
+}
+function dailyData() {
+  const values = [];
+  for (let i = 29; i >= 0; i--) { const ds = toISO(addDays(new Date(), -i)); let d = 0; state.habits.forEach(h => { if (isDoneOn(h.id, ds)) d++; }); values.push(d); }
+  return values;
+}
+function weekdayData() {
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const counts = [0, 0, 0, 0, 0, 0, 0], days = [0, 0, 0, 0, 0, 0, 0];
+  for (let i = 55; i >= 0; i--) {
+    const d = addDays(new Date(), -i), ds = toISO(d), wd = (d.getDay() + 6) % 7;
+    days[wd]++; let n = 0; state.habits.forEach(h => { if (isDoneOn(h.id, ds)) n++; }); counts[wd] += n;
+  }
+  return { labels, values: counts.map((c, i) => days[i] ? Math.round(c / days[i] * 10) / 10 : 0) };
+}
+function chartCanvas(el) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = el.clientWidth, h = el.clientHeight;
+  el.width = Math.round(w * dpr); el.height = Math.round(h * dpr);
+  const ctx = el.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function cssC(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || ""; }
+function roundRectPath(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function drawBarChart(canvas, labels, values, opts) {
+  if (!canvas) return;
+  const { ctx, w, h } = chartCanvas(canvas);
+  ctx.clearRect(0, 0, w, h);
+  const padL = 30, padB = 22, padT = 6, padR = 4;
+  const iw = w - padL - padR, ih = h - padT - padB;
+  const max = opts.max || Math.max(1, ...values);
+  const n = values.length;
+  const bw = Math.min(iw / n, 30), step = iw / n;
+  ctx.font = "9px system-ui, sans-serif";
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const y = padT + ih - (ih * g / 4);
+    ctx.strokeStyle = opts.border; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillStyle = opts.muted; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ctx.fillText(String(Math.round(max * g / 4)), padL - 4, y);
+  }
+  ctx.textBaseline = "top";
+  for (let i = 0; i < n; i++) {
+    const v = values[i], x = padL + step * i + (step - bw) / 2;
+    const bh = Math.max(2, (v / max) * ih), y = padT + ih - bh;
+    ctx.fillStyle = opts.color; roundRectPath(ctx, x, y, bw, bh, 3); ctx.fill();
+    if (labels[i]) { ctx.fillStyle = opts.muted; ctx.textAlign = "center"; ctx.fillText(labels[i], x + bw / 2, padT + ih + 5); }
+  }
+}
+function drawLineChart(canvas, values, opts) {
+  if (!canvas) return;
+  const { ctx, w, h } = chartCanvas(canvas);
+  ctx.clearRect(0, 0, w, h);
+  const padL = 30, padB = 20, padT = 6, padR = 6;
+  const iw = w - padL - padR, ih = h - padT - padB;
+  const max = opts.max || Math.max(1, ...values);
+  const n = values.length;
+  ctx.font = "9px system-ui, sans-serif"; ctx.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const y = padT + ih - (ih * g / 4);
+    ctx.strokeStyle = opts.border; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillStyle = opts.muted; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ctx.fillText(String(Math.round(max * g / 4)), padL - 4, y);
+  }
+  const pts = values.map((v, i) => [padL + (n === 1 ? iw / 2 : iw * i / (n - 1)), padT + ih - (v / max) * ih]);
+  ctx.beginPath(); ctx.moveTo(pts[0][0], padT + ih);
+  pts.forEach(p => ctx.lineTo(p[0], p[1]));
+  ctx.lineTo(pts[n - 1][0], padT + ih); ctx.closePath();
+  ctx.fillStyle = opts.color + "22"; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); pts.forEach(p => ctx.lineTo(p[0], p[1]));
+  ctx.strokeStyle = opts.color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke();
+  ctx.fillStyle = opts.color; ctx.beginPath(); ctx.arc(pts[n - 1][0], pts[n - 1][1], 3, 0, 7); ctx.fill();
+  ctx.textBaseline = "top";
+  ctx.fillStyle = opts.muted; ctx.textAlign = "left"; ctx.fillText(opts.leftLabel != null ? String(opts.leftLabel) : "0", padL, padT + ih + 3);
+  ctx.textAlign = "right"; ctx.fillText(String(opts.rightLabel != null ? opts.rightLabel : values[n - 1]), w - padR, padT + ih + 3);
+}
+function renderStats() {
+  const c = $("#content");
+  const lv = levelOf(state.xp), xs = xpStats();
+  const accent = cssC("--accent") || "#3b82f6", muted = cssC("--muted") || "#767e8a", border = cssC("--border") || "#e4e6ea";
+  let html = '<div class="page-head"><h2>Stats</h2></div>';
+  html += '<div class="card level-card"><div class="level-badge"><b>' + lv.level + '</b><span>LVL</span></div>' +
+    '<div class="level-right"><div class="level-name">' + esc(lv.name) + '</div>' +
+    '<div class="xp-bar"><div class="xp-fill" style="width:' + lv.into + '%"></div></div>' +
+    '<div class="xp-meta">' + state.xp + ' XP total · ' + lv.into + '/' + XP_PER_LEVEL + ' to next level</div></div></div>';
+  html += '<div class="card stats"><div class="stat"><b>' + xs.done + '</b><span>habits done</span></div>' +
+    '<div class="stat"><b>' + xs.workouts + '</b><span>workouts</span></div>' +
+    '<div class="stat"><b>' + xs.timers + '</b><span>timers</span></div></div>';
+  const wk = weeklyData(), dd = dailyData(), wd = weekdayData();
+  html += '<div class="card"><h3>Habit completion · last 8 weeks</h3><div class="chart-box"><canvas class="chart" id="chWeekly"></canvas></div></div>';
+  html += '<div class="card"><h3>Habits done per day · last 30 days</h3><div class="chart-box"><canvas class="chart" id="chDaily"></canvas></div></div>';
+  html += '<div class="card"><h3>Average habits per weekday</h3><div class="chart-box"><canvas class="chart" id="chWeekday"></canvas></div></div>';
+  if (state.habits.length) {
+    html += '<div class="card"><h3>Habit consistency · last 30 days</h3>';
+    state.habits.forEach(h => {
+      let d = 0;
+      for (let i = 29; i >= 0; i--) if (isDoneOn(h.id, toISO(addDays(new Date(), -i)))) d++;
+      const p = Math.round(d / 30 * 100);
+      html += '<div class="habit-row-s"><span class="grow"><i class="dot" style="background:' + h.color + '"></i><span class="name">' + esc(h.name) + '</span></span>' +
+        '<span class="mini-bar"><i style="width:' + p + '%"></i></span><b style="width:44px;text-align:right;font-size:12px">' + p + '%</b></div>';
+    });
+    html += '</div>';
+  }
+  const earned = ACHIEVEMENTS.filter(a => state.achievements[a.id]).length;
+  html += '<div class="card"><h3>Achievements <span class="muted" style="font-size:12px;font-weight:400">' + earned + '/' + ACHIEVEMENTS.length + '</span></h3><div class="ach-grid">' +
+    ACHIEVEMENTS.map(a => '<div class="ach' + (state.achievements[a.id] ? "" : " locked") + '"><span class="em">' + (state.achievements[a.id] ? a.icon : "🔒") + '</span><b>' + esc(a.name) + '</b><span>' + esc(a.desc) + '</span></div>').join("") +
+    '</div></div>';
+  c.innerHTML = html;
+  drawBarChart($("#chWeekly"), wk.labels, wk.values, { color: accent, muted, border, max: 100 });
+  drawLineChart($("#chDaily"), dd, { color: accent, muted, border });
+  drawBarChart($("#chWeekday"), wd.labels, wd.values, { color: accent, muted, border });
 }
 
 /* ---------------- Workouts ---------------- */
@@ -906,11 +1163,17 @@ function endWorkout(saveIt) {
   if (saveIt && w) {
     const workSegs = w.schedule.filter(s => s.type === "work");
     const completed = workSegs.filter(s => w.elapsed >= s.start + s.sec).length;
+    const exCount = {};
+    workSegs.forEach(s => { if (w.elapsed >= s.start + s.sec) exCount[s.label] = (exCount[s.label] || 0) + 1; });
+    const exercises = Object.keys(exCount).map(name => ({ name, sets: exCount[name] }));
+    const kcal = Math.round((w.elapsed / 60) * 6);
     state.sessions.unshift({
-      id: uid(), workoutId: w.workoutId, name: w.name, mode: w.mode, date: todayISO,
-      durationSec: w.elapsed, workDone: completed, workTotal: workSegs.length
+      id: uid(), workoutId: w.workoutId, name: w.name, mode: w.mode, date: todayISO, completedAt: Date.now(),
+      durationSec: w.elapsed, workDone: completed, workTotal: workSegs.length, exercises, kcal
     });
-    save(); toast("Workout saved"); notify("Workout complete", w.name + " — " + fmtDuration(w.elapsed));
+    addXp(XP_WORKOUT);
+    toast("Workout saved");
+    notify("Workout complete", w.name + " — " + fmtDuration(w.elapsed) + (kcal ? " · " + kcal + " kcal" : ""));
   }
   renderAll();
 }
@@ -932,10 +1195,19 @@ function renderWorkouts() {
   if (!state.sessions.length) html += '<div class="muted">No completed sessions yet.</div>';
   state.sessions.slice(0, 20).forEach(s => {
     const wd = (s.workTotal ? " · " + s.workDone + "/" + s.workTotal + " exercises" : "");
-    html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="flex:1;font-size:14px">' + esc(s.name) + '</b><span class="mode-badge">' + esc((s.mode || "").toUpperCase()) + '</span><span class="muted" style="font-size:12px">' + fmtDateLong(s.date) + " · " + fmtDuration(s.durationSec) + wd + "</span></div></div>";
+    const kcal = s.kcal ? " · " + s.kcal + " kcal" : "";
+    const exs = (s.exercises || []).map(e => esc(e.name) + " ×" + e.sets).join(", ");
+    html += '<div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+      '<b style="flex:1;font-size:14px">' + esc(s.name) + '</b>' +
+      '<span class="mode-badge">' + esc((s.mode || "").toUpperCase()) + '</span>' +
+      '<button class="icon-btn" style="width:32px;height:32px" onclick="delSession(\'' + s.id + '\')" title="Delete session">' + iTrash + "</button>" +
+      '<span class="muted" style="font-size:12px;width:100%">' + fmtDateLong(s.date) + " · " + fmtDuration(s.durationSec) + wd + kcal + "</span>" +
+      (exs ? '<span class="muted" style="font-size:11.5px;width:100%">' + exs + "</span>" : "") +
+      "</div></div>";
   });
   c.innerHTML = html;
 }
+function delSession(id) { if (confirm("Delete this workout session?")) { state.sessions = state.sessions.filter(s => s.id !== id); save(); renderAll(); } }
 
 /* ---------------- Dashboard Today ---------------- */
 function renderToday() {
@@ -947,6 +1219,16 @@ function renderToday() {
     '<div class="muted" style="margin:-8px 0 14px">' + dateLabel + "</div>";
   const pct = st.total ? Math.round(st.todayDone / st.total * 100) : 0;
   html += '<div class="card today-progress"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>' + st.todayDone + '/' + st.total + ' habits done</b><span class="muted">' + pct + '%</span></div><div class="bar"><div class="bar-fill" style="width:' + pct + '%"></div></div></div>';
+
+  const lv = levelOf(state.xp);
+  html += '<div class="card level-card"><div class="level-badge"><b>' + lv.level + '</b><span>LVL</span></div>' +
+    '<div class="level-right"><div class="level-name">' + esc(lv.name) + '</div>' +
+    '<div class="xp-bar"><div class="xp-fill" style="width:' + lv.into + '%"></div></div>' +
+    '<div class="xp-meta">' + state.xp + ' XP total · ' + lv.into + '/' + XP_PER_LEVEL + ' to next level · <a href="#" style="color:var(--accent)" onclick="event.preventDefault();switchView(\'stats\')">view stats</a></div></div></div>';
+
+  html += '<h3 style="font-size:15px;margin:16px 0 8px">Today\'s note</h3>';
+  html += '<div class="card notes-edit"><textarea class="input" id="todayNote" placeholder="How is today going?">' + esc(state.notes[todayISO] || "") + '</textarea>' +
+    '<button class="btn sm" style="margin-top:8px" onclick="saveTodayNote()">Save note</button></div>';
 
   html += '<h3 style="font-size:15px;margin:16px 0 8px">Habits</h3>';
   if (!state.habits.length) html += '<div class="muted" style="margin-bottom:8px">No habits yet.</div>';
@@ -1109,7 +1391,7 @@ function finishTimer() {
   cueDone();
   const dur = Math.round((Date.now() - activeTimer.startedAt) / 1000);
   state.timerLogs.unshift({ id: uid(), presetId: activeTimer.presetId, name: activeTimer.name, date: todayISO, durationSec: dur });
-  save();
+  addXp(XP_TIMER);
   notify("Timer complete", activeTimer.name + " — " + fmtDuration(dur));
   $("#tPause").style.display = "none"; $("#tStop").style.display = "none"; $("#tClose").style.display = "";
   $("#tPhase").textContent = "Complete!";
@@ -1130,6 +1412,7 @@ function summarizeDay(ds) {
   const tcount = state.timerLogs.filter(l => l.date === ds).length;
   if (wcount) badges.push('<span class="badge w">W' + (wcount > 1 ? wcount : "") + "</span>");
   if (tcount) badges.push('<span class="badge">T' + (tcount > 1 ? tcount : "") + "</span>");
+  if (state.notes[ds]) badges.push('<span class="badge n">N</span>');
   return { dots: dots.join(""), badges: badges.join("") };
 }
 
@@ -1158,6 +1441,20 @@ function renderCalendar() {
 
 function toggleHabitDay(hid, ds) { toggleHabit(hid, ds); openDay(ds); }
 
+function saveNote(ds, text) {
+  text = (text || "").trim();
+  const first = text && !state.notes[ds];
+  if (text) state.notes[ds] = text; else delete state.notes[ds];
+  if (first) addXp(XP_NOTE); else save();
+  toast(text ? "Note saved" : "Note removed");
+}
+function saveTodayNote() {
+  const t = $("#todayNote");
+  if (!t) return;
+  saveNote(todayISO, t.value);
+  renderToday();
+}
+
 function openDay(ds) {
   let html = "<h3>" + fmtDateLong(ds) + "</h3>";
   html += "<h4>Habits</h4>";
@@ -1166,11 +1463,192 @@ function openDay(ds) {
   ).join("") : '<div class="muted">None</div>';
   const sess = state.sessions.filter(s => s.date === ds);
   html += "<h4>Workouts</h4>";
-  html += sess.length ? sess.map(s => '<div class="row">' + esc(s.name) + " · " + fmtDuration(s.durationSec) + "</div>").join("") : '<div class="muted">None</div>';
+  html += sess.length ? sess.map(s => '<div class="row">' + esc(s.name) + " · " + fmtDuration(s.durationSec) + (s.kcal ? " · " + s.kcal + " kcal" : "") + "</div>").join("") : '<div class="muted">None</div>';
   const logs = state.timerLogs.filter(l => l.date === ds);
   html += "<h4>Timers</h4>";
   html += logs.length ? logs.map(l => '<div class="row">' + esc(l.name) + " · " + fmtDuration(l.durationSec) + "</div>").join("") : '<div class="muted">None</div>';
-  openModal(html + '<div class="modal-actions"><button class="btn" onclick="closeModal()">Close</button></div>');
+  html += "<h4>Note</h4>";
+  html += '<div class="notes-edit"><textarea class="input" id="dayNote" placeholder="What happened that day?">' + esc(state.notes[ds] || "") + '</textarea></div>';
+  html += '<div class="modal-actions"><button class="btn" id="saveDayNote">Save note</button><button class="btn ghost" onclick="closeModal()">Close</button></div>';
+  openModal(html, ov => { ov.querySelector("#saveDayNote").onclick = () => { saveNote(ds, ov.querySelector("#dayNote").value); openDay(ds); }; });
+}
+
+/* ---------------- Google Drive sync ---------------- */
+const GKEY = "alltimer_gdrive";
+const DRIVE_FILE = "alltimer_sync_v1.json";
+let gdrive = { clientId: "", accessToken: "", expiresAt: 0, fileId: "", lastSync: "", autoPush: false };
+function loadGDrive() {
+  try { const p = JSON.parse(localStorage.getItem(GKEY) || "{}"); gdrive = Object.assign({}, gdrive, p); } catch (e) {}
+}
+function saveGDrive() { try { localStorage.setItem(GKEY, JSON.stringify(gdrive)); } catch (e) {} }
+function driveConnected() { return !!(gdrive.clientId && gdrive.accessToken); }
+let gTokenClient = null, pushTimer = null;
+function loadGsiScript() {
+  return new Promise((res, rej) => {
+    if (window.google && google.accounts) return res();
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.onload = res; s.onerror = () => rej(new Error("could not load Google sign-in"));
+    document.head.appendChild(s);
+  });
+}
+function ensureToken() {
+  return new Promise((res, rej) => {
+    if (gdrive.accessToken && Date.now() < (gdrive.expiresAt || 0) - 30000) return res(gdrive.accessToken);
+    if (!gdrive.clientId) return rej(new Error("Not connected to Google"));
+    loadGsiScript().then(() => {
+      gTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: gdrive.clientId,
+        scope: "https://www.googleapis.com/auth/drive.file",
+        callback: tok => {
+          if (tok.error) return rej(new Error(tok.error));
+          gdrive.accessToken = tok.access_token;
+          gdrive.expiresAt = (tok.expires_in || 3600) * 1000 + Date.now();
+          saveGDrive();
+          res(tok.access_token);
+        }
+      });
+      gTokenClient.requestAccessToken();
+    }).catch(rej);
+  });
+}
+async function driveConnect() {
+  const inp = $("#driveClientId");
+  if (!inp) return;
+  const cid = inp.value.trim();
+  if (!cid) { toast("Paste your Google Client ID first"); return; }
+  gdrive.clientId = cid; saveGDrive();
+  setDriveBusy(true, "Connecting…");
+  try {
+    await loadGsiScript();
+    gTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: cid,
+      scope: "https://www.googleapis.com/auth/drive.file",
+      callback: tok => {
+        if (tok.error) { setDriveBusy(false); renderSettings(); toast("Google connection failed: " + tok.error); return; }
+        gdrive.accessToken = tok.access_token;
+        gdrive.expiresAt = (tok.expires_in || 3600) * 1000 + Date.now();
+        saveGDrive();
+        setDriveBusy(false);
+        toast("Google Drive connected");
+        renderSettings();
+      }
+    });
+    gTokenClient.requestAccessToken();
+  } catch (e) { setDriveBusy(false); toast("Failed to load Google sign-in: " + e.message); }
+}
+function setDriveBusy(on, label) {
+  const dot = $("#driveDot");
+  if (dot) { dot.classList.toggle("on", !on && driveConnected()); dot.classList.toggle("busy", on); }
+  const t = $("#driveStatusText");
+  if (t && label) t.textContent = label;
+}
+async function findDriveFile(token) {
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent("name='" + DRIVE_FILE + "' and trashed=false") + "&fields=files(id)&pageSize=5";
+  const r = await fetch(url, { headers: { Authorization: "Bearer " + token } });
+  if (!r.ok) throw new Error("Drive search failed (" + r.status + ")");
+  const j = await r.json();
+  return (j.files && j.files[0]) ? j.files[0].id : null;
+}
+async function createDriveFile(token) {
+  const r = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=media", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
+  if (!r.ok) throw new Error("Drive create failed (" + r.status + ")");
+  const j = await r.json();
+  await fetch("https://www.googleapis.com/drive/v3/files/" + j.id, {
+    method: "PATCH",
+    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+    body: JSON.stringify({ name: DRIVE_FILE })
+  });
+  return j.id;
+}
+async function updateDriveFile(token, fileId, payload) {
+  const r = await fetch("https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media", {
+    method: "PATCH",
+    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error("Drive upload failed (" + r.status + ")");
+  return true;
+}
+async function readDriveFile(token, fileId) {
+  const r = await fetch("https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media", { headers: { Authorization: "Bearer " + token } });
+  if (!r.ok) throw new Error("Drive download failed (" + r.status + ")");
+  return await r.json();
+}
+function mergeStates(r) {
+  const hm = {}; state.habits.forEach(h => hm[h.id] = 1);
+  (r.habits || []).forEach(h => { if (!hm[h.id]) state.habits.push(h); });
+  const wm = {}; state.workouts.forEach(w => wm[w.id] = 1);
+  (r.workouts || []).forEach(w => { if (!wm[w.id]) state.workouts.push(w); });
+  const tm = {}; state.timerPresets.forEach(t => tm[t.id] = 1);
+  (r.timerPresets || []).forEach(t => { if (!tm[t.id]) state.timerPresets.push(t); });
+  (Object.keys(r.habitLogs || {})).forEach(ds => {
+    state.habitLogs[ds] = state.habitLogs[ds] || {};
+    Object.keys(r.habitLogs[ds]).forEach(hid => {
+      const rc = r.habitLogs[ds][hid], lc = state.habitLogs[ds][hid];
+      if (!lc) state.habitLogs[ds][hid] = rc;
+      else state.habitLogs[ds][hid] = { done: lc.done || rc.done, subtasks: Object.assign({}, rc.subtasks || {}, lc.subtasks || {}) };
+    });
+  });
+  const sid = {}; state.sessions.forEach(s => sid[s.id] = 1);
+  (r.sessions || []).forEach(s => { if (!sid[s.id]) state.sessions.push(s); });
+  const tid = {}; state.timerLogs.forEach(t => tid[t.id] = 1);
+  (r.timerLogs || []).forEach(t => { if (!tid[t.id]) state.timerLogs.push(t); });
+  Object.keys(r.notes || {}).forEach(ds => { if (!state.notes[ds]) state.notes[ds] = r.notes[ds]; });
+  state.xp = Math.max(state.xp || 0, r.xp || 0);
+  Object.assign(state.achievements, r.achievements || {});
+  state.sessions.sort((a, b) => String(b.date).localeCompare(String(a.date)) || (b.completedAt || 0) - (a.completedAt || 0));
+}
+async function pushToDrive(silent) {
+  if (!silent) setDriveBusy(true, "Pushing…");
+  try {
+    const token = await ensureToken();
+    let fileId = gdrive.fileId || await findDriveFile(token);
+    if (!fileId) fileId = await createDriveFile(token);
+    gdrive.fileId = fileId;
+    const payload = JSON.parse(JSON.stringify(state));
+    payload.syncedAt = new Date().toISOString();
+    await updateDriveFile(token, fileId, payload);
+    gdrive.lastSync = payload.syncedAt;
+    saveGDrive();
+    if (!silent) { toast("Pushed to Google Drive"); renderSettings(); }
+  } catch (e) { if (!silent) { toast("Push failed: " + e.message); renderSettings(); } }
+  setDriveBusy(false);
+}
+async function pullFromDrive() {
+  setDriveBusy(true, "Pulling…");
+  try {
+    const token = await ensureToken();
+    let fileId = gdrive.fileId || await findDriveFile(token);
+    if (!fileId) { toast("Nothing on Drive yet — push first"); setDriveBusy(false); renderSettings(); return; }
+    gdrive.fileId = fileId;
+    const remote = await readDriveFile(token, fileId);
+    if (!remote || !Array.isArray(remote.habits)) throw new Error("Invalid sync file");
+    mergeStates(remote);
+    gdrive.lastSync = new Date().toISOString();
+    saveGDrive();
+    save(); applyTheme(); renderAll(); scheduleReminders();
+    toast("Merged data from Google Drive");
+  } catch (e) { toast("Pull failed: " + e.message); }
+  setDriveBusy(false); renderSettings();
+}
+function setupGuideHTML() {
+  const origin = esc(window.location.origin || window.location.href);
+  return '<details style="margin-top:12px"><summary class="muted" style="cursor:pointer;font-weight:600">Setup guide (2 min)</summary>' +
+    '<ol class="hint" style="padding-left:18px;margin:6px 0 0">' +
+    "<li>Go to <b>console.cloud.google.com</b> and create a project.</li>" +
+    '<li><b>APIs &amp; Services → Library</b> → search “Google Drive API” → <b>Enable</b>.</li>' +
+    "<li><b>APIs &amp; Services → OAuth consent screen</b> → External → fill app name &amp; add your email as test user.</li>" +
+    "<li><b>APIs &amp; Services → Credentials → Create credentials → OAuth Client ID → Web application</b>.</li>" +
+    "<li>In <b>Authorized JavaScript origins</b> add <code>" + origin + "</code>" + (location.hostname === "localhost" ? "" : " (and <code>http://localhost:5500</code> for local testing)") + ".</li>" +
+    "<li>Copy the <b>Client ID</b> (…<code>.apps.googleusercontent.com</code>) and paste it above, then click <b>Connect</b>.</li>" +
+    "<li>Tokens in test mode expire after 7 days — publish the OAuth app (Status → Publish) to avoid re-approving.</li>" +
+    "</ol></details>";
 }
 
 /* ---------------- Settings ---------------- */
@@ -1178,6 +1656,9 @@ function renderSettings() {
   const c = $("#content");
   const t = state.settings.theme;
   const seg = ["auto", "light", "dark"].map(v => '<button data-t="' + v + '" class="' + (t === v ? "on" : "") + '">' + v.charAt(0).toUpperCase() + v.slice(1) + "</button>").join("");
+  const connected = driveConnected();
+  const dot = '<span class="drive-dot' + (connected ? " on" : "") + '" id="driveDot"></span>';
+  const status = connected ? ("Connected · last sync " + (gdrive.lastSync ? gdrive.lastSync.slice(0, 16).replace("T", " ") : "never")) : "Not connected yet.";
   c.innerHTML =
     '<div class="page-head"><h2>Settings</h2></div>' +
     '<div class="card"><h3>Appearance</h3>' +
@@ -1194,6 +1675,18 @@ function renderSettings() {
         '<button class="btn danger-ghost" onclick="resetAll()">Reset all data</button>' +
       "</div>" +
       '<input type="file" id="importFile3" accept=".json,application/json" style="display:none" onchange="importFile(this)">' +
+    "</div>" +
+    '<div class="card"><h3 class="drive-head">' + dot + "<span>Google Drive sync</span></h3>" +
+      '<div class="hint" style="margin:2px 0 12px">Keep your data in sync across devices automatically. Requires a free Google OAuth Client ID.</div>' +
+      '<label class="field"><span>Google OAuth Client ID</span><input class="input" id="driveClientId" value="' + esc(gdrive.clientId || "") + '" placeholder="xxxx.apps.googleusercontent.com"></label>' +
+      '<div class="drive-actions">' +
+        '<button class="btn" onclick="driveConnect()">' + (connected ? "Reconnect" : "Connect Google") + "</button>" +
+        '<button class="btn ghost" onclick="pushToDrive()">Push to Drive</button>' +
+        '<button class="btn ghost" onclick="pullFromDrive()">Pull from Drive</button>' +
+      "</div>" +
+      '<div class="toggle-row" style="margin-top:12px"><span>Auto push after each change</span><label class="toggle"><input type="checkbox" id="autoPushToggle" ' + (gdrive.autoPush ? "checked" : "") + '><span class="track"></span></label></div>' +
+      '<div class="muted" id="driveStatusText" style="margin-top:8px">' + status + "</div>" +
+      setupGuideHTML() +
     "</div>" +
     '<div class="card"><h3>Offline & hosting</h3>' +
       '<div class="muted" style="line-height:1.6">This app works fully offline from a single file. To access it from your phone anywhere:' +
@@ -1224,6 +1717,10 @@ function renderSettings() {
       state.settings.notify = false; save(); scheduleReminders();
     }
   };
+  const cid = $("#driveClientId");
+  if (cid) cid.addEventListener("change", () => { gdrive.clientId = cid.value.trim(); saveGDrive(); });
+  const at = $("#autoPushToggle");
+  if (at) at.addEventListener("change", e => { gdrive.autoPush = e.target.checked; saveGDrive(); toast(gdrive.autoPush ? "Auto push enabled" : "Auto push disabled"); });
 }
 
 /* ---------------- Export / Import / Reset ---------------- */
@@ -1272,6 +1769,7 @@ function renderAll() {
   else if (currentView === "habits") renderHabits();
   else if (currentView === "workouts") renderWorkouts();
   else if (currentView === "timers") renderTimers();
+  else if (currentView === "stats") renderStats();
   else if (currentView === "calendar") renderCalendar();
   else if (currentView === "settings") renderSettings();
 }
@@ -1289,6 +1787,7 @@ function setNavIcons() {
 }
 function init() {
   load();
+  loadGDrive();
   setNavIcons();
   applyTheme();
   document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => switchView(b.dataset.view)));
@@ -1297,6 +1796,7 @@ function init() {
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
   scheduleReminders();
   switchView("today");
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 document.addEventListener("DOMContentLoaded", init);
 </script>
